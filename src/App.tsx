@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { WorkflowCanvas } from './components/Canvas/WorkflowCanvas';
 import { NodePalette } from './components/NodePalette/NodePalette';
 import { PropertyPanel } from './components/PropertyPanel/PropertyPanel';
@@ -17,7 +17,8 @@ import {
   AlertTriangle,
   RefreshCw,
   TrendingUp,
-  ChevronDown
+  ChevronDown,
+  RotateCcw
 } from 'lucide-react';
 import { useWallet } from './hooks/useWallet';
 import { useEulerData } from './hooks/useEulerData';
@@ -29,7 +30,7 @@ function App() {
   const [currentNodes, setCurrentNodes] = useState<Node[]>([]);
   const [currentEdges, setCurrentEdges] = useState<Edge[]>([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  
+  const [clearCanvasFlag, setClearCanvasFlag] = useState(false);
   const { 
     wallet, 
     connectWallet, 
@@ -95,6 +96,11 @@ function App() {
     }
     
     setIsExecutionDialogOpen(true);
+  };
+
+  const handleClearCanvas = () => {
+    setClearCanvasFlag(flag => !flag); // Toggle to trigger clear
+    setSelectedNode(null);
   };
 
   const handlePreviewWorkflow = () => {
@@ -188,6 +194,11 @@ function App() {
             </div>
 
             <div className="flex items-center space-x-2 border-l border-border pl-4">
+            <Button variant="outline" size="sm" onClick={handleClearCanvas} title="Clear Canvas">
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Clear
+              </Button>
+
               <Button variant="outline" size="sm" onClick={handleSaveWorkflow}>
                 <Save className="h-4 w-4 mr-2" />
                 Save
@@ -284,6 +295,9 @@ function App() {
         <main className={`flex-1 relative overflow-hidden flex flex-col transition-all duration-300 ${isPanelOpen ? 'mr-96' : ''}`}>
           <div className="flex-1 canvas-container">
             <WorkflowCanvas 
+              clearFlag={clearCanvasFlag}
+              nodes={currentNodes}
+              edges={currentEdges}
               onWorkflowStateChange={handleWorkflowStateChange}
               onNodeSelection={handleNodeSelection}
             />

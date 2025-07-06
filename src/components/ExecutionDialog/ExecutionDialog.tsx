@@ -21,7 +21,7 @@ import {
   Clock,
   ExternalLink,
   RefreshCw,
-  X
+  X,
 } from 'lucide-react';
 import { useWorkflowExecution } from '../../hooks/useWorkflowExecution';
 import type { Node, Edge } from '@xyflow/react';
@@ -166,47 +166,49 @@ export const ExecutionDialog: React.FC<ExecutionDialogProps> = ({
                   <CardHeader className="pb-4">
                     <CardTitle className="text-lg">Workflow Summary</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4 overflow-y-auto">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center p-3 rounded-lg bg-muted/50">
-                        <div className="text-2xl font-bold text-primary">{nodes.length}</div>
-                        <div className="text-sm text-muted-foreground">Total Nodes</div>
-                      </div>
-                      <div className="text-center p-3 rounded-lg bg-muted/50">
-                        <div className="text-2xl font-bold text-primary">{edges.length}</div>
-                        <div className="text-sm text-muted-foreground">Connections</div>
-                      </div>
-                      <div className="text-center p-3 rounded-lg bg-muted/50">
-                        <div className="text-2xl font-bold text-primary">{actionableNodes.length}</div>
-                        <div className="text-sm text-muted-foreground">Actions</div>
-                      </div>
-                      <div className="text-center p-3 rounded-lg bg-muted/50">
-                        <div className="text-2xl font-bold text-primary">
-                          {nodes.filter(n => n.data.category === 'control').length}
+                  <CardContent className="space-y-4 p-4">
+                    <div className="max-h-[40vh] overflow-y-auto">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <div className="text-2xl font-bold text-primary">{nodes.length}</div>
+                          <div className="text-sm text-muted-foreground">Total Nodes</div>
                         </div>
-                        <div className="text-sm text-muted-foreground">Controls</div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h4 className="font-medium mb-3">Action Breakdown:</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {actionableNodes.map((node, index) => (
-                          <div key={node.id} className="flex items-center gap-3 p-3 rounded-lg border">
-                            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                              <span className="text-sm font-medium text-primary">{index + 1}</span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-sm">{node.data.label}</div>
-                              <div className="text-xs text-muted-foreground capitalize">
-                                {node.data.action || node.data.category}
-                              </div>
-                            </div>
-                            <Badge variant="outline" className="text-xs">
-                              {node.data.category}
-                            </Badge>
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <div className="text-2xl font-bold text-primary">{edges.length}</div>
+                          <div className="text-sm text-muted-foreground">Connections</div>
+                        </div>
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <div className="text-2xl font-bold text-primary">{actionableNodes.length}</div>
+                          <div className="text-sm text-muted-foreground">Actions</div>
+                        </div>
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <div className="text-2xl font-bold text-primary">
+                            {nodes.filter(n => n.data.category === 'control').length}
                           </div>
-                        ))}
+                          <div className="text-sm text-muted-foreground">Controls</div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="font-medium mb-3">Action Breakdown:</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {actionableNodes.map((node, index) => (
+                            <div key={node.id} className="flex items-center gap-3 p-3 rounded-lg border">
+                              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                                <span className="text-sm font-medium text-primary">{index + 1}</span>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-sm">{node.data.label}</div>
+                                <div className="text-xs text-muted-foreground capitalize">
+                                  {node.data.action || node.data.category}
+                                </div>
+                              </div>
+                              <Badge variant="outline" className="text-xs">
+                                {node.data.category}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -381,6 +383,7 @@ export const ExecutionDialog: React.FC<ExecutionDialogProps> = ({
                       <CardTitle className="text-lg">Execution Progress</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                    <div className="max-h-[40vh] overflow-y-auto">
                       <div>
                         <div className="flex justify-between text-sm mb-2">
                           <span>Overall Progress</span>
@@ -412,6 +415,7 @@ export const ExecutionDialog: React.FC<ExecutionDialogProps> = ({
                             )}
                           </div>
                         ))}
+                      </div>
                       </div>
                     </CardContent>
                   </Card>

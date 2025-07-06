@@ -78,6 +78,10 @@
   --success: hsl(142, 70%, 50%);
   --warning: hsl(45, 93%, 47%);
   --error: hsl(0, 84%, 60%);
+
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
 }
 
 @layer base {
@@ -87,6 +91,7 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     background: var(--background);
+    font-family: var(--font-family);
   }
 
   ::-webkit-scrollbar {

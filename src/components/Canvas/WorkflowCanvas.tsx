@@ -238,16 +238,27 @@ const initialEdges: Edge[] = [
 interface WorkflowCanvasProps {
   onWorkflowStateChange?: (nodes: Node[], edges: Edge[]) => void;
   onNodeSelection?: (node: Node | null) => void;
+  clearFlag?: boolean;
 }
 
 const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({ 
   onWorkflowStateChange, 
-  onNodeSelection 
+  onNodeSelection, 
+  clearFlag 
 }) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const prevClearFlag = useRef(clearFlag);
+
+  useEffect(() => {
+    if (prevClearFlag.current !== clearFlag) {
+      setNodes([]);
+      setEdges([]);
+      prevClearFlag.current = clearFlag;
+    }
+  }, [clearFlag, setNodes, setEdges]);
 
   useEffect(() => {
     onWorkflowStateChange?.(nodes, edges);
