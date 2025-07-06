@@ -1,0 +1,347 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --sidebar-background: var(--sidebar-bg);
+  --sidebar-text: var(--sidebar-text-color);
+  --sidebar-text-muted: var(--sidebar-text-muted-color);
+  --sidebar-hover: var(--sidebar-hover-bg);
+  --sidebar-active: var(--sidebar-active-bg);
+
+  --canvas-background: var(--canvas-bg);
+  --canvas-grid: var(--canvas-grid-color);
+  --canvas-dot: var(--canvas-dot-color);
+
+  --node-background: var(--node-bg);
+  --node-border: var(--node-border-color);
+  --node-shadow: var(--node-shadow-color);
+  --node-hover: var(--node-hover-bg);
+  --node-selected: var(--node-selected-color);
+  --node-handle: var(--node-handle-color);
+
+  --panel-background: var(--panel-bg);
+  --panel-border: var(--panel-border-color);
+  --panel-text: var(--panel-text-color);
+  --panel-text-muted: var(--panel-text-muted-color);
+
+  --tab-active: var(--tab-active-bg);
+  --tab-inactive: var(--tab-inactive-bg);
+  --tab-text: var(--tab-text-color);
+  --tab-text-active: var(--tab-text-active-color);
+
+  --category-core: var(--category-core-color);
+  --category-strategy: var(--category-strategy-color);
+  --category-lp: var(--category-lp-color);
+  --category-alert: var(--category-alert-color);
+  --category-control: var(--category-control-color);
+}
+
+:root {
+  --radius: 0.625rem;
+  
+  --background: oklch(0.09 0 0);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.12 0 0);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.12 0 0);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.57 0.19 255);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.16 0 0);
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.16 0 0);
+  --muted-foreground: oklch(0.63 0 0);
+  --accent: oklch(0.57 0.19 255);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.58 0.22 25);
+  --border: oklch(0.16 0 0);
+  --input: oklch(0.12 0 0);
+  --ring: oklch(0.57 0.19 255);
+  --chart-1: oklch(0.57 0.19 255);
+  --chart-2: oklch(0.55 0.15 165);
+  --chart-3: oklch(0.65 0.2 285);
+  --chart-4: oklch(0.67 0.18 70);
+  --chart-5: oklch(0.45 0.15 45);
+  --sidebar: oklch(0.10 0 0);
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.57 0.19 255);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.16 0 0);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(0.16 0 0);
+  --sidebar-ring: oklch(0.57 0.19 255);
+
+  --sidebar-bg: oklch(0.10 0 0);
+  --sidebar-text-color: oklch(0.98 0 0);
+  --sidebar-text-muted-color: oklch(0.63 0 0);
+  --sidebar-hover-bg: oklch(0.14 0 0);
+  --sidebar-active-bg: oklch(0.57 0.19 255);
+
+  --canvas-bg: oklch(0.08 0 0);
+  --canvas-grid-color: oklch(0.14 0 0);
+  --canvas-dot-color: oklch(0.25 0 0);
+
+  --node-bg: oklch(0.13 0 0);
+  --node-border-color: oklch(0.20 0 0);
+  --node-shadow-color: oklch(0 0 0 / 0.6);
+  --node-hover-bg: oklch(0.16 0 0);
+  --node-selected-color: oklch(0.57 0.19 255);
+  --node-handle-color: oklch(0.57 0.19 255);
+
+  --panel-bg: oklch(0.10 0 0);
+  --panel-border-color: oklch(0.16 0 0);
+  --panel-text-color: oklch(0.98 0 0);
+  --panel-text-muted-color: oklch(0.63 0 0);
+
+  --tab-active-bg: oklch(0.57 0.19 255);
+  --tab-inactive-bg: oklch(0.16 0 0);
+  --tab-text-color: oklch(0.63 0 0);
+  --tab-text-active-color: oklch(0.98 0 0);
+
+  --category-core-color: oklch(0.57 0.19 255);
+  --category-strategy-color: oklch(0.65 0.2 285);
+  --category-lp-color: oklch(0.55 0.15 165);
+  --category-alert-color: oklch(0.67 0.18 70);
+  --category-control-color: oklch(0.45 0.05 0);
+}
+
+.dark {
+  --background: oklch(0.09 0 0);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.12 0 0);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.12 0 0);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.57 0.19 255);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.16 0 0);
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.16 0 0);
+  --muted-foreground: oklch(0.63 0 0);
+  --accent: oklch(0.57 0.19 255);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.58 0.22 25);
+  --border: oklch(0.16 0 0);
+  --input: oklch(0.12 0 0);
+  --ring: oklch(0.57 0.19 255);
+  --chart-1: oklch(0.57 0.19 255);
+  --chart-2: oklch(0.55 0.15 165);
+  --chart-3: oklch(0.65 0.2 285);
+  --chart-4: oklch(0.67 0.18 70);
+  --chart-5: oklch(0.45 0.15 45);
+  --sidebar: oklch(0.10 0 0);
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.57 0.19 255);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.16 0 0);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(0.16 0 0);
+  --sidebar-ring: oklch(0.57 0.19 255);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: oklch(0.12 0 0);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.25 0 0);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.35 0 0);
+  }
+}
+
+.sidebar-item {
+  @apply flex items-center gap-3 p-3 rounded-lg transition-all duration-200 cursor-pointer;
+  background: transparent;
+  color: var(--sidebar-text);
+  border: 1px solid transparent;
+}
+
+.sidebar-item:hover {
+  background: var(--sidebar-hover);
+  border-color: var(--sidebar-border);
+}
+
+.sidebar-item.active {
+  background: var(--sidebar-active);
+  color: oklch(0.98 0 0);
+}
+
+.panel-tabs .tab-trigger {
+  background: var(--tab-inactive);
+  color: var(--tab-text);
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.panel-tabs .tab-trigger[data-state="active"] {
+  background: var(--tab-active);
+  color: var(--tab-text-active);
+}
+
+.category-badge {
+  @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded;
+  border: 1px solid;
+}
+
+.category-core {
+  background: color-mix(in srgb, var(--category-core) 15%, transparent);
+  color: var(--category-core);
+  border-color: var(--category-core);
+}
+
+.category-strategy {
+  background: color-mix(in srgb, var(--category-strategy) 15%, transparent);
+  color: var(--category-strategy);
+  border-color: var(--category-strategy);
+}
+
+.category-lp {
+  background: color-mix(in srgb, var(--category-lp) 15%, transparent);
+  color: var(--category-lp);
+  border-color: var(--category-lp);
+}
+
+.category-alert {
+  background: color-mix(in srgb, var(--category-alert) 15%, transparent);
+  color: var(--category-alert);
+  border-color: var(--category-alert);
+}
+
+.category-control {
+  background: color-mix(in srgb, var(--category-control) 15%, transparent);
+  color: var(--category-control);
+  border-color: var(--category-control);
+}
+
+.react-flow__background {
+  background-color: var(--canvas-background);
+}
+
+.react-flow__background .react-flow__background-pattern {
+  fill: var(--canvas-dot);
+}
+
+.react-flow__node {
+  background: var(--node-background);
+  border: 1px solid var(--node-border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px var(--node-shadow);
+  transition: all 0.2s ease;
+}
+
+.react-flow__node:hover {
+  background: var(--node-hover);
+  transform: translateY(-1px);
+}
+
+.react-flow__node.selected {
+  border-color: var(--node-selected);
+  box-shadow: 0 0 0 2px var(--node-selected);
+}
+
+.react-flow__handle {
+  background: var(--node-handle);
+  border: 2px solid var(--node-bg);
+  width: 8px;
+  height: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.react-flow__node:hover .react-flow__handle,
+.react-flow__node.selected .react-flow__handle {
+  opacity: 1;
+}
+
+.react-flow__edge-path {
+  stroke: oklch(0.25 0 0);
+  stroke-width: 2;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--node-selected);
+}
+
+.property-field {
+  @apply space-y-2;
+}
+
+.property-field label {
+  @apply text-sm font-medium;
+  color: var(--panel-text);
+}
+
+.property-field input,
+.property-field textarea,
+.property-field select {
+  @apply w-full px-3 py-2 rounded border transition-colors;
+  background: var(--input);
+  border-color: var(--border);
+  color: var(--panel-text);
+}
+
+.property-field input:focus,
+.property-field textarea:focus,
+.property-field select:focus {
+  border-color: var(--ring);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 20%, transparent);
+}
