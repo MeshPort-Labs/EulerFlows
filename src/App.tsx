@@ -1,10 +1,11 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { WorkflowCanvas } from './components/Canvas/WorkflowCanvas';
 import { NodePalette } from './components/NodePalette/NodePalette';
-import { PropertyPanel } from './components/PropertyPanel/PropertyPanel';
-import { StatusBar } from './components/StatusBar/StatusBar';
 import { ExecutionDialog } from './components/ExecutionDialog/ExecutionDialog';
 import { WalletModal } from './components/wallet/WalletModal';
+import { PropertyPanel } from './components/PropertyPanel/PropertyPanel';
+import { StatusBar } from './components/StatusBar/StatusBar';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { ChainSwitcher } from './components/wallet/ChainSwitcher';
 import { Button } from './components/ui/button';
 import { Badge } from './components/ui/badge';
@@ -16,21 +17,20 @@ import {
   Wallet, 
   AlertTriangle,
   RefreshCw,
-  TrendingUp,
-  ChevronDown,
-  RotateCcw
+  Activity,
 } from 'lucide-react';
 import { useWallet } from './hooks/useWallet';
 import { useEulerData } from './hooks/useEulerData';
-import { useWorkflowExecution } from './hooks/useWorkflowExecution';
 import type { Node, Edge } from '@xyflow/react';
 
-function App() {
+function AppContent() {
   const [isExecutionDialogOpen, setIsExecutionDialogOpen] = useState(false);
   const [currentNodes, setCurrentNodes] = useState<Node[]>([]);
   const [currentEdges, setCurrentEdges] = useState<Edge[]>([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [clearCanvasFlag, setClearCanvasFlag] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(false);
+  
   const { 
     wallet, 
     connectWallet, 
@@ -41,233 +41,162 @@ function App() {
   } = useWallet();
 
   const { 
-    balances, 
-    userPool, 
+    balances = {}, 
+    userPool = null, 
     loading: dataLoading, 
     refetch: refetchData 
   } = useEulerData();
 
-  const { validateWorkflow } = useWorkflowExecution();
+  // Type guards for balances and userPool
+  type BalancesType = { WETH?: { formatted?: string }, USDC?: { formatted?: string } };
+  const safeBalances = (balances as BalancesType) || {};
+  const safeUserPool: string | null = typeof userPool === 'string' ? userPool : null;
 
-  const isPanelOpen = !!selectedNode;
+  const isPanelOpen = selectedNode !== null;
 
-  const isWorkflowValid = useMemo(() => {
-    if (currentNodes.length === 0) return false;
-    const hasStartNode = currentNodes.some(node => node.type === 'startNode');
-    const hasEndNode = currentNodes.some(node => node.type === 'endNode');
-    return hasStartNode && hasEndNode && currentNodes.length > 1;
+  const validation = useMemo(() => {
+    if (currentNodes.length === 0) return { valid: false, errors: ['No nodes in workflow'] };
+    const hasStartNode = currentNodes.some(n => n.data.controlType === 'start');
+    const hasEndNode = currentNodes.some(n => n.data.controlType === 'end');
+    const unconfiguredNodes = currentNodes.filter(n => n.data.category !== 'control' && !n.data.configured);
+    
+    const errors = [];
+    if (!hasStartNode) errors.push('Missing start node');
+    if (!hasEndNode) errors.push('Missing end node');
+    if (unconfiguredNodes.length > 0) errors.push(`${unconfiguredNodes.length} nodes need configuration`);
+    
+    return { valid: errors.length === 0, errors };
   }, [currentNodes]);
 
-  const handleSaveWorkflow = () => {
-    const workflowData = {
-      nodes: currentNodes,
-      edges: currentEdges,
-      timestamp: new Date().toISOString(),
-    };
-    localStorage.setItem('euler-workflow', JSON.stringify(workflowData));
-  };
-
-  const handleLoadWorkflow = () => {
-    try {
-      const saved = localStorage.getItem('euler-workflow');
-      if (saved) {
-        const workflowData = JSON.parse(saved);
-        console.log('Loaded workflow:', workflowData);
-      }
-    } catch (error) {
-      console.error('Failed to load workflow:', error);
-    }
-  };
-
-  const handleExecuteWorkflow = () => {
-    if (!wallet.isConnected) {
-      connectWallet();
-      return;
-    }
-    
-    if (!wallet.isCorrectChain) {
-      const shouldSwitch = confirm(
-        'This workflow is designed for Devland. Switch networks?'
-      );
-      if (shouldSwitch) {
-        switchToDevland();
-      }
-      return;
-    }
-    
-    setIsExecutionDialogOpen(true);
-  };
-
-  const handleClearCanvas = () => {
-    setClearCanvasFlag(flag => !flag); // Toggle to trigger clear
-    setSelectedNode(null);
-  };
-
-  const handlePreviewWorkflow = () => {
-    console.log('Previewing workflow:', { nodes: currentNodes, edges: currentEdges });
-  };
-
-  const handleNodeDrag = (nodeTemplate: any) => {
-    console.log('Node dragged:', nodeTemplate);
-  };
-
-  const handleWorkflowStateChange = (nodes: Node[], edges: Edge[]) => {
+  const handleWorkflowStateChange = useCallback((nodes: Node[], edges: Edge[]) => {
     setCurrentNodes(nodes);
     setCurrentEdges(edges);
-  };
+  }, []);
 
-  const handleNodeSelection = (node: Node | null) => {
+  const handleNodeSelection = useCallback((node: Node | null) => {
     setSelectedNode(node);
-  };
+  }, []);
 
-  const handleNodeUpdate = (nodeId: string, updates: any) => {
-    setCurrentNodes(nodes => 
-      nodes.map(node => 
+  const handleNodeUpdate = useCallback((nodeId: string, updates: any) => {
+    setCurrentNodes(prev => 
+      prev.map(node => 
         node.id === nodeId 
           ? { ...node, data: { ...node.data, ...updates } }
           : node
       )
     );
-    
-    if (selectedNode && selectedNode.id === nodeId) {
-      setSelectedNode({ ...selectedNode, data: { ...selectedNode.data, ...updates } });
+  }, []);
+
+  const handleNodeDrag = useCallback((nodeType: string, data: any) => {
+    console.log('Node dragged:', nodeType, data);
+  }, []);
+
+  const handleClearCanvas = () => {
+    setCurrentNodes([]);
+    setCurrentEdges([]);
+    setSelectedNode(null);
+    setClearCanvasFlag(flag => !flag);
+  };
+
+  const handleExecuteWorkflow = () => {
+    if (validation.valid && !isExecuting) {
+      setIsExecutionDialogOpen(true);
     }
   };
 
-  const validation = validateWorkflow(currentNodes, currentEdges);
+  const handleCloseExecutionDialog = () => {
+    setIsExecutionDialogOpen(false);
+    setIsExecuting(false);
+  };
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-background">
-      <header className="header-bar flex-shrink-0 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-3">
-              <h1 className="text-2xl font-bold text-foreground">EulerFlow</h1>
-              <Badge variant="outline" className="text-primary border-primary bg-primary/10">
-                Visual Strategy Builder
-              </Badge>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <Badge variant="outline" className="text-xs">
-                Nodes: {currentNodes.length}
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                Edges: {currentEdges.length}
-              </Badge>
-              {dataLoading && (
-                <Badge variant="outline" className="text-xs animate-pulse">
-                  <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
-                  Loading...
-                </Badge>
-              )}
-            </div>
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* Header */}
+      <header className="header-bar px-6 py-3 flex items-center justify-between border-b flex-shrink-0">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Activity className="w-6 h-6 text-primary" />
+            <h1 className="text-xl font-bold">EulerFlow</h1>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <ChainSwitcher wallet={wallet} onSwitchToDevland={switchToDevland} />
-            
-            <div className="flex items-center space-x-2">
-              <Wallet className="h-4 w-4 text-muted-foreground" />
-              {wallet.isConnected ? (
-                <div className="flex items-center space-x-2">
-                  <Badge className="bg-success/20 text-success border-success">
-                    Connected
-                  </Badge>
-                  <span className="text-sm font-mono text-muted-foreground">
-                    {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
-                  </span>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={disconnectWallet}
-                    className="h-8 text-xs"
-                  >
-                    <ChevronDown className="h-3 w-3" />
-                  </Button>
-                </div>
-              ) : (
-                <Button variant="outline" size="sm" onClick={connectWallet}>
-                  Connect Wallet
-                </Button>
-              )}
-            </div>
-
-            <div className="flex items-center space-x-2 border-l border-border pl-4">
-            <Button variant="outline" size="sm" onClick={handleClearCanvas} title="Clear Canvas">
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Clear
-              </Button>
-
-              <Button variant="outline" size="sm" onClick={handleSaveWorkflow}>
-                <Save className="h-4 w-4 mr-2" />
-                Save
-              </Button>
-              
-              <Button variant="outline" size="sm" onClick={handleLoadWorkflow}>
-                <Upload className="h-4 w-4 mr-2" />
-                Load
-              </Button>
-              
-              <Button variant="outline" size="sm" onClick={handlePreviewWorkflow}>
-                <Eye className="h-4 w-4 mr-2" />
-                Preview
-              </Button>
-              
-              <Button 
-                onClick={handleExecuteWorkflow}
-                disabled={!isWorkflowValid}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                title={!isWorkflowValid ? 'Add nodes to create a valid workflow first' : 'Execute workflow'}
-              >
-                <Play className="h-4 w-4 mr-2" />
-                Execute
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {wallet.isConnected && !wallet.isCorrectChain && (
-        <div className="flex-shrink-0 border-b border-border px-6 py-3 bg-warning/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
-              <span className="text-sm text-warning">
-                You're connected to the wrong network. Please switch to Devland to execute workflows.
-              </span>
-            </div>
-            <Button size="sm" onClick={switchToDevland}>
-              Switch to Devland
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleClearCanvas}>
+              Clear
+            </Button>
+            <Button variant="outline" size="sm">
+              <Save className="w-4 h-4 mr-2" />
+              Save
+            </Button>
+            <Button variant="outline" size="sm">
+              <Upload className="w-4 h-4 mr-2" />
+              Load
             </Button>
           </div>
         </div>
-      )}
 
-      {wallet.isConnected && wallet.isCorrectChain && (
-        <div className="flex-shrink-0 border-b border-border px-6 py-3 bg-primary/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-primary">
-                  Devland Status:
-                </span>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                {Object.entries(balances).slice(0, 4).map(([symbol, balance]) => (
-                  <Badge key={symbol} variant="outline" className="text-xs bg-card">
-                    {symbol}: {balance?.formatted ? parseFloat(balance.formatted).toFixed(2) : '0'}
-                  </Badge>
-                ))}
-              </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExecuteWorkflow}
+              disabled={!validation.valid || isExecuting}
+              className="gap-2"
+            >
+              <Play className="w-4 h-4" />
+              {isExecuting ? 'Executing...' : 'Execute'}
+            </Button>
+            
+            <Button variant="outline" size="sm">
+              <Eye className="w-4 h-4 mr-2" />
+              Simulate
+            </Button>
+          </div>
 
+          <ChainSwitcher wallet={wallet} onSwitchToDevland={switchToDevland} />
+          
+          {wallet.isConnected ? (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={disconnectWallet}
+                className="gap-2"
+              >
+                <Wallet className="w-4 h-4" />
+                {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
+              </Button>
+            </div>
+          ) : (
+            <Button onClick={() => connectWallet()} size="sm">
+              <Wallet className="w-4 h-4 mr-2" />
+              Connect Wallet
+            </Button>
+          )}
+        </div>
+      </header>
+
+      {/* Wallet Status & Data */}
+      {wallet.isConnected && (
+        <div className="px-6 py-2 bg-muted/30 border-b flex items-center justify-between">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>Connected to Devland</span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className="text-xs">
+                WETH: {safeBalances.WETH?.formatted || '0.00'}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                USDC: {safeBalances.USDC?.formatted || '0.00'}
+              </Badge>
               <Badge 
                 variant="outline" 
-                className={`text-xs ${userPool ? 'bg-success/20 text-success border-success' : 'bg-muted text-muted-foreground border-border'}`}
+                className={`text-xs ${safeUserPool ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}
               >
-                Pool: {userPool ? `${userPool.slice(0, 8)}...` : 'None'}
+                Pool: {safeUserPool && typeof safeUserPool === 'string' ? `${safeUserPool.slice(0, 8)}...` : 'None'}
               </Badge>
             </div>
             
@@ -287,17 +216,16 @@ function App() {
         </div>
       )}
 
+      {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         <aside className="sidebar-container w-80 flex-shrink-0 overflow-y-auto">
-          <NodePalette onNodeDrag={handleNodeDrag} />
+          <NodePalette />
         </aside>
 
         <main className={`flex-1 relative overflow-hidden flex flex-col transition-all duration-300 ${isPanelOpen ? 'mr-96' : ''}`}>
           <div className="flex-1 canvas-container">
             <WorkflowCanvas 
               clearFlag={clearCanvasFlag}
-              nodes={currentNodes}
-              edges={currentEdges}
               onWorkflowStateChange={handleWorkflowStateChange}
               onNodeSelection={handleNodeSelection}
             />
@@ -307,7 +235,7 @@ function App() {
             nodeCount={currentNodes.length}
             edgeCount={currentEdges.length}
             isValid={validation.valid}
-            executionStatus="idle"
+            executionStatus={isExecuting ? "running" : "idle"}
           />
         </main>
 
@@ -323,18 +251,47 @@ function App() {
         )}
       </div>
 
+      {/* Modals */}
       <WalletModal
         isOpen={isWalletModalOpen}
         onClose={() => setIsWalletModalOpen(false)}
       />
       
-      <ExecutionDialog
-        isOpen={isExecutionDialogOpen}
-        onClose={() => setIsExecutionDialogOpen(false)}
-        nodes={currentNodes}
-        edges={currentEdges}
-      />
+      {/* Execution Dialog with Error Boundary */}
+      {isExecutionDialogOpen && (
+        <ErrorBoundary
+          fallback={
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-background p-6 rounded-lg max-w-md text-center">
+                <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Execution Error</h3>
+                <p className="text-muted-foreground mb-4">
+                  Something went wrong during workflow execution
+                </p>
+                <Button onClick={handleCloseExecutionDialog}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          }
+        >
+          <ExecutionDialog
+            isOpen={isExecutionDialogOpen}
+            onClose={handleCloseExecutionDialog}
+            nodes={currentNodes}
+            edges={currentEdges}
+          />
+        </ErrorBoundary>
+      )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
   );
 }
 

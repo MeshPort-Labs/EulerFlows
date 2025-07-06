@@ -1,6 +1,9 @@
 import { useState, useCallback } from "react";
 import type { Node, Edge } from "@xyflow/react";
+import { EulerWorkflowExecutor } from "../lib/eulerIntegrations";
+import { executeEVCBatch } from "../lib/euler/eulerLib";
 import type { NodeData } from "../types/nodes";
+import { useAccount } from "wagmi";
 import { toast } from "sonner";
 
 interface ExecutionResult {
@@ -21,20 +24,24 @@ interface ExecutionStep {
 }
 
 export const useWorkflowExecution = () => {
+  const { address: userAddress } = useAccount();
   const [isExecuting, setIsExecuting] = useState(false);
   const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([]);
   const [currentStep, setCurrentStep] = useState<number>(-1);
 
+  // Correct topological sort implementation from real-app
   const getExecutionOrder = useCallback(
     (nodes: Node[], edges: Edge[]): string[] => {
       const graph = new Map<string, string[]>();
       const inDegree = new Map<string, number>();
 
+      // Initialize graph
       nodes.forEach((node) => {
         graph.set(node.id, []);
         inDegree.set(node.id, 0);
       });
 
+      // Build adjacency list and calculate in-degrees
       edges.forEach((edge) => {
         const sourceId = edge.source;
         const targetId = edge.target;
@@ -43,9 +50,11 @@ export const useWorkflowExecution = () => {
         inDegree.set(targetId, (inDegree.get(targetId) || 0) + 1);
       });
 
+      // Topological sort using Kahn's algorithm
       const queue: string[] = [];
       const result: string[] = [];
 
+      // Find all nodes with no incoming edges
       inDegree.forEach((degree, nodeId) => {
         if (degree === 0) {
           queue.push(nodeId);
@@ -56,14 +65,22 @@ export const useWorkflowExecution = () => {
         const current = queue.shift()!;
         result.push(current);
 
-        graph.get(current)?.forEach((neighbor) => {
-          const newDegree = (inDegree.get(neighbor) || 0) - 1;
-          inDegree.set(neighbor, newDegree);
+        // Process all neighbors
+        const neighbors = graph.get(current) || [];
+        neighbors.forEach((neighbor) => {
+          const newInDegree = (inDegree.get(neighbor) || 0) - 1;
+          inDegree.set(neighbor, newInDegree);
 
-          if (newDegree === 0) {
+          if (newInDegree === 0) {
             queue.push(neighbor);
           }
         });
+      }
+
+      // Check for cycles
+      if (result.length !== nodes.length) {
+        console.warn('Detected cycle in workflow graph');
+        return nodes.map(node => node.id);
       }
 
       return result;
@@ -71,120 +88,54 @@ export const useWorkflowExecution = () => {
     []
   );
 
-  const validateWorkflow = useCallback(
-    (nodes: Node[], edges: Edge[]): { valid: boolean; errors: string[] } => {
-      const errors: string[] = [];
+  const validateWorkflow = useCallback((nodes: Node[], edges: Edge[]) => {
+    const errors: string[] = [];
 
-      const startNodes = nodes.filter((n) => n.type === "startNode");
-      if (startNodes.length === 0) {
-        errors.push("Workflow must have a start node");
-      }
-      if (startNodes.length > 1) {
-        errors.push("Workflow can only have one start node");
-      }
+    if (nodes.length === 0) {
+      errors.push('Workflow must contain at least one node');
+    }
 
-      const endNodes = nodes.filter((n) => n.type === "endNode");
-      if (endNodes.length === 0) {
-        errors.push("Workflow must have an end node");
-      }
+    const unconfiguredNodes = nodes.filter(node => 
+      node.data.category !== 'control' && !node.data.configured
+    );
 
-      const executionOrder = getExecutionOrder(nodes, edges);
-      if (executionOrder.length !== nodes.length) {
-        errors.push("Workflow contains cycles or disconnected components");
-      }
+    if (unconfiguredNodes.length > 0) {
+      errors.push(`${unconfiguredNodes.length} nodes need configuration`);
+    }
 
-      nodes.forEach((node) => {
-        const nodeData = node.data as NodeData;
+    if (!userAddress) {
+      errors.push('Wallet must be connected');
+    }
 
-        if (nodeData.category === "control") return;
-
-        if (nodeData.category === "core") {
-          const coreData = nodeData as any;
-          switch (coreData.action) {
-            case "supply":
-            case "withdraw":
-            case "borrow":
-            case "repay":
-              if (!coreData.vaultAddress) {
-                errors.push(`${node.data.label}: Vault address is required`);
-              }
-              if (!coreData.amount) {
-                errors.push(`${node.data.label}: Amount is required`);
-              }
-              break;
-            case "swap":
-              if (!coreData.tokenIn || !coreData.tokenOut) {
-                errors.push(
-                  `${node.data.label}: Both input and output tokens are required`
-                );
-              }
-              break;
-            case "permissions":
-              if (
-                !coreData.controller &&
-                (!coreData.collaterals || coreData.collaterals.length === 0)
-              ) {
-                errors.push(
-                  `${node.data.label}: Either controller or collaterals must be specified`
-                );
-              }
-              break;
-          }
-        }
-
-        if (nodeData.category === "strategy") {
-          const strategyData = nodeData as any;
-          switch (strategyData.strategyType) {
-            case "leverage":
-              if (!strategyData.collateralAsset || !strategyData.borrowAsset) {
-                errors.push(
-                  `${node.data.label}: Both collateral and borrow assets are required`
-                );
-              }
-              if (
-                !strategyData.leverageFactor ||
-                strategyData.leverageFactor < 1.1
-              ) {
-                errors.push(
-                  `${node.data.label}: Leverage factor must be at least 1.1x`
-                );
-              }
-              break;
-            case "borrow-against-lp":
-              if (!strategyData.borrowAsset || !strategyData.borrowAmount) {
-                errors.push(
-                  `${node.data.label}: Borrow asset and amount are required`
-                );
-              }
-              break;
-          }
-        }
-      });
-
-      return { valid: errors.length === 0, errors };
-    },
-    [getExecutionOrder]
-  );
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings: []
+    };
+  }, [userAddress]);
 
   const executeWorkflow = useCallback(async (nodes: Node[], edges: Edge[]): Promise<ExecutionResult> => {
-    setIsExecuting(true);
-    setCurrentStep(-1);
-    setExecutionSteps([]);
+    if (!userAddress) {
+      toast.error('Wallet must be connected for execution');
+      return { success: false, error: 'Wallet not connected' };
+    }
 
-    const executionToastId = toast.loading('Starting workflow execution...', {
-      description: 'Preparing transactions and validating workflow'
+    setIsExecuting(true);
+    
+    const executionToastId = toast.loading('Executing workflow...', {
+      description: 'Preparing real transactions'
     });
 
+    console.log('🚀 Starting REAL workflow execution...');
+    
     try {
-      console.log('🚀 Starting workflow execution...');
-      
       const validation = validateWorkflow(nodes, edges);
       if (!validation.valid) {
-        toast.error('Workflow validation failed', {
-          description: validation.errors[0] || 'Unknown validation error',
+        toast.error('Execution failed', {
+          description: validation.errors[0] || 'Workflow validation failed',
           id: executionToastId
         });
-        throw new Error(`Workflow validation failed:\n${validation.errors.join('\n')}`);
+        return { success: false, error: validation.errors[0] };
       }
 
       const executionOrder = getExecutionOrder(nodes, edges);
@@ -195,7 +146,7 @@ export const useWorkflowExecution = () => {
         .filter(node => node && node.data.category !== 'control')
         .map(node => ({ node: node!, data: node!.data as NodeData }));
 
-      console.log(`🔧 Processing ${actionableNodes.length} actionable nodes`);
+      console.log(`🔧 Processing ${actionableNodes.length} actionable nodes with REAL contracts`);
 
       if (actionableNodes.length === 0) {
         toast.success('Workflow completed', {
@@ -208,8 +159,8 @@ export const useWorkflowExecution = () => {
         };
       }
 
-      toast.loading(`Executing ${actionableNodes.length} operations...`, {
-        description: 'Processing transactions on-chain',
+      toast.loading(`Executing ${actionableNodes.length} operations on-chain...`, {
+        description: 'Sending real transactions to Euler protocol',
         id: executionToastId
       });
 
@@ -235,73 +186,86 @@ export const useWorkflowExecution = () => {
           )
         );
 
-        console.log(`⚡ Executing step ${i + 1}/${actionableNodes.length}: ${node.data.label}`);
+        console.log(`⚡ Executing step ${i + 1}/${actionableNodes.length} with REAL contracts: ${node.data.label}`);
 
         try {
-          // Simulate execution with a delay
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          // Mock transaction hash
-          const mockTxHash = `0x${Math.random().toString(16).substr(2, 64)}`;
-          completedTransactions.push(mockTxHash);
+          // Generate REAL batch operations using EulerWorkflowExecutor
+          const batchOperations = await EulerWorkflowExecutor.executeNodeSequence([data], userAddress);
 
-          setExecutionSteps(prev => 
-            prev.map((step, index) => 
-              index === i ? { 
-                ...step, 
-                status: 'completed', 
-                result: `Completed (tx: ${mockTxHash.slice(0, 10)}...)` 
-              } : step
-            )
-          );
+          if (batchOperations.length === 0) {
+            console.log(`⚠️ No operations generated for node: ${node.data.label}`);
+            
+            setExecutionSteps(prev => 
+              prev.map((step, index) => 
+                index === i ? { ...step, status: 'completed', result: { message: 'No operations needed' } } : step
+              )
+            );
+            continue;
+          }
 
-        } catch (stepError) {
-          console.error(`❌ Step ${i + 1} failed:`, stepError);
+          console.log(`🔄 Executing ${batchOperations.length} REAL batch operations for node: ${node.data.label}`);
+
+          // Execute REAL contract calls using executeEVCBatch
+          const batchResult = await executeEVCBatch(batchOperations);
+
+          if (batchResult.success) {
+            console.log(`✅ REAL transaction successful: ${node.data.label}`);
+            console.log(`📦 Transaction hash: ${batchResult.transactionHash}`);
+            console.log(`⛽ Gas used: ${batchResult.gasUsed}`);
+            
+            completedTransactions.push(batchResult.transactionHash || '');
+            
+            setExecutionSteps(prev => 
+              prev.map((step, index) => 
+                index === i ? { 
+                  ...step, 
+                  status: 'completed', 
+                  result: {
+                    transactionHash: batchResult.transactionHash,
+                    gasUsed: batchResult.gasUsed,
+                    message: 'Transaction confirmed on-chain'
+                  }
+                } : step
+              )
+            );
+          } else {
+            throw new Error(batchResult.error || 'Unknown execution error');
+          }
+
+        } catch (error) {
+          console.error(`❌ REAL contract execution failed: ${node.data.label}`, error);
           
           setExecutionSteps(prev => 
             prev.map((step, index) => 
               index === i ? { 
                 ...step, 
                 status: 'failed', 
-                error: stepError instanceof Error ? stepError.message : 'Unknown error' 
+                error: error instanceof Error ? error.message : 'Unknown error' 
               } : step
             )
           );
-
-          toast.error(`Step ${i + 1} failed: ${node.data.label}`, {
-            description: stepError instanceof Error ? stepError.message : 'Unknown error',
-            id: executionToastId
-          });
-
-          throw stepError;
+          
+          throw error;
         }
       }
 
       setCurrentStep(-1);
       
-      toast.success('Workflow executed successfully! 🎉', {
-        description: `Completed ${actionableNodes.length} operations with ${completedTransactions.length} transactions`,
-        id: executionToastId,
-        action: completedTransactions.length > 0 ? {
-          label: 'View Transaction',
-          onClick: () => {
-            const txHash = completedTransactions[0];
-            window.open(`https://etherscan.io/tx/${txHash}`, '_blank');
-          }
-        } : undefined
+      toast.success('Workflow executed successfully with real contracts! 🎉', {
+        description: `Completed ${actionableNodes.length} operations. Transaction hashes: ${completedTransactions.slice(0, 2).join(', ')}${completedTransactions.length > 2 ? '...' : ''}`,
+        id: executionToastId
       });
-      
-      console.log('✅ Workflow execution completed successfully!');
+
       return {
         success: true,
-        message: `Workflow executed successfully! Completed ${actionableNodes.length} operations.`,
+        message: `Successfully completed ${actionableNodes.length} operations with real contracts.`,
         transactionHash: completedTransactions[0]
       };
 
     } catch (error) {
-      console.error('❌ Workflow execution failed:', error);
+      console.error('❌ REAL workflow execution failed:', error);
       
-      toast.error('Workflow execution failed', {
+      toast.error('Real workflow execution failed', {
         description: error instanceof Error ? error.message : 'Unknown error occurred',
         id: executionToastId
       });
@@ -313,14 +277,19 @@ export const useWorkflowExecution = () => {
     } finally {
       setIsExecuting(false);
     }
-  }, [validateWorkflow, getExecutionOrder]);
+  }, [validateWorkflow, getExecutionOrder, userAddress]);
 
   const simulateWorkflow = useCallback(async (nodes: Node[], edges: Edge[]) => {
+    if (!userAddress) {
+      toast.error('Wallet must be connected for simulation');
+      return { success: false, errors: ['Wallet must be connected'] };
+    }
+
     const simulationToastId = toast.loading('Simulating workflow...', {
-      description: 'Validating operations and estimating gas'
+      description: 'Generating operations without execution'
     });
 
-    console.log('🔍 Simulating workflow...');
+    console.log('🔍 Simulating workflow (generating operations only)...');
     
     const validation = validateWorkflow(nodes, edges);
     if (!validation.valid) {
@@ -338,24 +307,18 @@ export const useWorkflowExecution = () => {
       .map(node => node!.data as NodeData);
 
     try {
-      // Simulate with a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const operations = nodeDataSequence.map((data, index) => ({
-        id: index,
-        type: data.category,
-        description: data.label || 'Unknown operation'
-      }));
+      // Generate operations without executing (this is the simulation)
+      const operations = await EulerWorkflowExecutor.executeNodeSequence(nodeDataSequence, userAddress);
       
       toast.success('Simulation successful! ✅', {
-        description: `Generated ${operations.length} operations, ready for execution`,
+        description: `Generated ${operations.length} real operations, ready for execution`,
         id: simulationToastId
       });
       
       return {
         success: true,
         operations,
-        estimatedGas: BigInt(operations.length * 100000),
+        estimatedGas: BigInt(operations.length * 150000),
         executionOrder,
         nodeCount: nodeDataSequence.length
       };
@@ -370,7 +333,7 @@ export const useWorkflowExecution = () => {
         error: error instanceof Error ? error.message : 'Simulation failed',
       };
     }
-  }, [validateWorkflow, getExecutionOrder]);
+  }, [validateWorkflow, getExecutionOrder, userAddress]);
 
   return {
     isExecuting,

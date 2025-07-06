@@ -25,7 +25,8 @@ const initialNodes: Node[] = [
     data: {
       label: 'Portfolio Start',
       category: 'control',
-      controlType: 'start'
+      controlType: 'start',
+      configured: true
     },
   },
   {
@@ -38,7 +39,8 @@ const initialNodes: Node[] = [
       action: 'supply' as const,
       description: 'Primary collateral',
       amount: '80',
-      vaultAddress: 'WETH'
+      vaultAddress: 'WETH',
+      configured: true
     },
   },
   {
@@ -51,7 +53,8 @@ const initialNodes: Node[] = [
       action: 'supply' as const,
       description: 'Stablecoin base',
       amount: '10000',
-      vaultAddress: 'USDC'
+      vaultAddress: 'USDC',
+      configured: true
     },
   },
   {
@@ -63,7 +66,8 @@ const initialNodes: Node[] = [
       category: 'core' as const,
       action: 'permissions' as const,
       description: 'Setup borrowing capabilities',
-      controller: 'USDC'
+      controller: 'USDC',
+      configured: true
     },
   },
   {
@@ -76,7 +80,8 @@ const initialNodes: Node[] = [
       action: 'withdraw' as const,
       description: 'Rebalance WETH position',
       amount: '15',
-      vaultAddress: 'WETH'
+      vaultAddress: 'WETH',
+      configured: true
     },
   },
   {
@@ -91,7 +96,8 @@ const initialNodes: Node[] = [
       tokenIn: 'WETH',
       tokenOut: 'USDC',
       amount: '15',
-      slippage: 0.5
+      slippage: 0.5,
+      configured: true
     },
   },
   {
@@ -104,7 +110,8 @@ const initialNodes: Node[] = [
       action: 'supply' as const,
       description: 'Reinvest proceeds',
       amount: '40000',
-      vaultAddress: 'USDC'
+      vaultAddress: 'USDC',
+      configured: true
     },
   },
   {
@@ -117,7 +124,8 @@ const initialNodes: Node[] = [
       action: 'withdraw' as const,
       description: 'Take USDC profits',
       amount: '8000',
-      vaultAddress: 'USDC'
+      vaultAddress: 'USDC',
+      configured: true
     },
   },
   {
@@ -132,7 +140,8 @@ const initialNodes: Node[] = [
       tokenIn: 'USDC',
       tokenOut: 'WETH',
       amount: '8000',
-      slippage: 0.5
+      slippage: 0.5,
+      configured: true
     },
   },
   {
@@ -145,7 +154,8 @@ const initialNodes: Node[] = [
       action: 'supply' as const,
       description: 'Compound WETH position',
       amount: '3',
-      vaultAddress: 'WETH'
+      vaultAddress: 'WETH',
+      configured: true
     },
   },
   {
@@ -155,7 +165,8 @@ const initialNodes: Node[] = [
     data: {
       label: 'Portfolio Optimized',
       category: 'control' as const,
-      controlType: 'end' as const
+      controlType: 'end' as const,
+      configured: true
     },
   },
 ];
