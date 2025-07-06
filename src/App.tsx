@@ -29,7 +29,6 @@ function App() {
   const [currentNodes, setCurrentNodes] = useState<Node[]>([]);
   const [currentEdges, setCurrentEdges] = useState<Edge[]>([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
   
   const { 
     wallet, 
@@ -47,9 +46,9 @@ function App() {
     refetch: refetchData 
   } = useEulerData();
 
-  const {
-    validateWorkflow
-  } = useWorkflowExecution();
+  const { validateWorkflow } = useWorkflowExecution();
+
+  const isPanelOpen = !!selectedNode;
 
   const isWorkflowValid = useMemo(() => {
     if (currentNodes.length === 0) return false;
@@ -72,7 +71,7 @@ function App() {
       const saved = localStorage.getItem('euler-workflow');
       if (saved) {
         const workflowData = JSON.parse(saved);
-        console.log('📂 Loaded workflow:', workflowData);
+        console.log('Loaded workflow:', workflowData);
       }
     } catch (error) {
       console.error('Failed to load workflow:', error);
@@ -99,7 +98,7 @@ function App() {
   };
 
   const handlePreviewWorkflow = () => {
-    console.log('👀 Previewing workflow:', { nodes: currentNodes, edges: currentEdges });
+    console.log('Previewing workflow:', { nodes: currentNodes, edges: currentEdges });
   };
 
   const handleNodeDrag = (nodeTemplate: any) => {
@@ -113,7 +112,6 @@ function App() {
 
   const handleNodeSelection = (node: Node | null) => {
     setSelectedNode(node);
-    setIsPanelOpen(!!node);
   };
 
   const handleNodeUpdate = (nodeId: string, updates: any) => {
@@ -133,57 +131,44 @@ function App() {
   const validation = validateWorkflow(currentNodes, currentEdges);
 
   return (
-    <div 
-      className="h-screen flex flex-col overflow-hidden"
-      style={{ background: 'var(--background)' }}
-    >
-      {/* Header */}
-      <header 
-        className="flex-shrink-0 border-b px-6 py-4"
-        style={{ 
-          background: 'var(--panel-bg)',
-          borderColor: 'var(--panel-border)'
-        }}
-      >
+    <div className="h-screen flex flex-col overflow-hidden bg-background">
+      <header className="header-bar flex-shrink-0 px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Left - Branding & Info */}
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--panel-text)' }}>
-              EulerFlow
-            </h1>
-            <Badge 
-              variant="outline" 
-              className="text-blue-700 border-blue-200"
-              style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)' }}
-            >
-              Visual Strategy Builder
-            </Badge>
-            
-            <Badge variant="outline" className="text-xs">
-              Nodes: {currentNodes.length} | Edges: {currentEdges.length}
-            </Badge>
-
-            {dataLoading && (
-              <Badge variant="outline" className="text-xs animate-pulse">
-                <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
-                Loading...
+            <div className="flex items-center space-x-3">
+              <h1 className="text-2xl font-bold text-foreground">EulerFlow</h1>
+              <Badge variant="outline" className="text-primary border-primary bg-primary/10">
+                Visual Strategy Builder
               </Badge>
-            )}
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <Badge variant="outline" className="text-xs">
+                Nodes: {currentNodes.length}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                Edges: {currentEdges.length}
+              </Badge>
+              {dataLoading && (
+                <Badge variant="outline" className="text-xs animate-pulse">
+                  <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                  Loading...
+                </Badge>
+              )}
+            </div>
           </div>
           
-          {/* Right - Controls */}
           <div className="flex items-center space-x-4">
             <ChainSwitcher wallet={wallet} onSwitchToDevland={switchToDevland} />
             
-            {/* Wallet Section */}
             <div className="flex items-center space-x-2">
-              <Wallet className="h-4 w-4" style={{ color: 'var(--panel-text-muted)' }} />
+              <Wallet className="h-4 w-4 text-muted-foreground" />
               {wallet.isConnected ? (
                 <div className="flex items-center space-x-2">
-                  <Badge variant="default" className="bg-green-100 text-green-800">
+                  <Badge className="bg-success/20 text-success border-success">
                     Connected
                   </Badge>
-                  <span className="text-sm font-mono" style={{ color: 'var(--panel-text)' }}>
+                  <span className="text-sm font-mono text-muted-foreground">
                     {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
                   </span>
                   <Button 
@@ -202,11 +187,7 @@ function App() {
               )}
             </div>
 
-            {/* Action Buttons */}
-            <div 
-              className="flex items-center space-x-2 border-l pl-4"
-              style={{ borderColor: 'var(--panel-border)' }}
-            >
+            <div className="flex items-center space-x-2 border-l border-border pl-4">
               <Button variant="outline" size="sm" onClick={handleSaveWorkflow}>
                 <Save className="h-4 w-4 mr-2" />
                 Save
@@ -225,11 +206,8 @@ function App() {
               <Button 
                 onClick={handleExecuteWorkflow}
                 disabled={!isWorkflowValid}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 title={!isWorkflowValid ? 'Add nodes to create a valid workflow first' : 'Execute workflow'}
-                style={{ 
-                  backgroundColor: 'var(--tab-active)', 
-                  color: 'var(--tab-text-active)' 
-                }}
               >
                 <Play className="h-4 w-4 mr-2" />
                 Execute
@@ -239,19 +217,12 @@ function App() {
         </div>
       </header>
 
-      {/* Network Warning Banner */}
       {wallet.isConnected && !wallet.isCorrectChain && (
-        <div 
-          className="flex-shrink-0 border-b px-6 py-3"
-          style={{ 
-            backgroundColor: 'color-mix(in srgb, var(--category-alert) 10%, transparent)',
-            borderColor: 'var(--category-alert)'
-          }}
-        >
+        <div className="flex-shrink-0 border-b border-border px-6 py-3 bg-warning/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5" style={{ color: 'var(--category-alert)' }} />
-              <span className="text-sm" style={{ color: 'var(--category-alert)' }}>
+              <AlertTriangle className="h-5 w-5 text-warning" />
+              <span className="text-sm text-warning">
                 You're connected to the wrong network. Please switch to Devland to execute workflows.
               </span>
             </div>
@@ -262,28 +233,20 @@ function App() {
         </div>
       )}
 
-      {/* Euler Data Status */}
       {wallet.isConnected && wallet.isCorrectChain && (
-        <div 
-          className="flex-shrink-0 border-b px-6 py-3"
-          style={{ 
-            backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
-            borderColor: 'var(--primary)'
-          }}
-        >
+        <div className="flex-shrink-0 border-b border-border px-6 py-3 bg-primary/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <TrendingUp className="h-4 w-4" style={{ color: 'var(--primary)' }} />
-                <span className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-primary">
                   Devland Status:
                 </span>
               </div>
               
-              {/* Token Balances */}
               <div className="flex items-center space-x-2">
                 {Object.entries(balances).slice(0, 4).map(([symbol, balance]) => (
-                  <Badge key={symbol} variant="outline" className="text-xs bg-white">
+                  <Badge key={symbol} variant="outline" className="text-xs bg-card">
                     {symbol}: {balance?.formatted ? parseFloat(balance.formatted).toFixed(2) : '0'}
                   </Badge>
                 ))}
@@ -291,7 +254,7 @@ function App() {
 
               <Badge 
                 variant="outline" 
-                className={`text-xs ${userPool ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}
+                className={`text-xs ${userPool ? 'bg-success/20 text-success border-success' : 'bg-muted text-muted-foreground border-border'}`}
               >
                 Pool: {userPool ? `${userPool.slice(0, 8)}...` : 'None'}
               </Badge>
@@ -313,22 +276,13 @@ function App() {
         </div>
       )}
 
-      {/* Main Content - Takes remaining height */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Node Palette - Fixed width */}
-        <aside 
-          className="w-80 border-r overflow-y-auto flex-shrink-0"
-          style={{ 
-            background: 'var(--sidebar-bg)',
-            borderColor: 'var(--sidebar-border)'
-          }}
-        >
+        <aside className="sidebar-container w-80 flex-shrink-0 overflow-y-auto">
           <NodePalette onNodeDrag={handleNodeDrag} />
         </aside>
 
-        {/* Canvas - Takes remaining width, includes StatusBar at bottom */}
-        <main className="flex-1 relative overflow-hidden flex flex-col">
-          <div className="flex-1">
+        <main className={`flex-1 relative overflow-hidden flex flex-col transition-all duration-300 ${isPanelOpen ? 'mr-96' : ''}`}>
+          <div className="flex-1 canvas-container">
             <WorkflowCanvas 
               onWorkflowStateChange={handleWorkflowStateChange}
               onNodeSelection={handleNodeSelection}
@@ -343,16 +297,18 @@ function App() {
           />
         </main>
 
-        {/* Property Panel */}
-        <PropertyPanel
-          isOpen={isPanelOpen}
-          onClose={() => setIsPanelOpen(false)}
-          selectedNode={selectedNode}
-          onNodeUpdate={handleNodeUpdate}
-        />
+        {isPanelOpen && (
+          <aside className="fixed right-0 top-0 bottom-0 w-96 z-40 animate-slide-in">
+            <PropertyPanel
+              isOpen={isPanelOpen}
+              onClose={() => setSelectedNode(null)}
+              selectedNode={selectedNode}
+              onNodeUpdate={handleNodeUpdate}
+            />
+          </aside>
+        )}
       </div>
 
-      {/* Modals */}
       <WalletModal
         isOpen={isWalletModalOpen}
         onClose={() => setIsWalletModalOpen(false)}

@@ -2,6 +2,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Wallet, X } from 'lucide-react';
+import { useConnect } from 'wagmi';
 
 interface WalletModalProps {
   isOpen: boolean;
@@ -9,15 +10,37 @@ interface WalletModalProps {
 }
 
 export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => {
-  const walletOptions = [
-    { id: 'metamask', name: 'MetaMask', icon: '🦊' },
-    { id: 'coinbase', name: 'Coinbase Wallet', icon: '🔵' },
-    { id: 'walletconnect', name: 'WalletConnect', icon: '🔗' },
-  ];
+  const { connect, connectors, isPending } = useConnect();
 
-  const handleConnectWallet = (walletId: string) => {
-    console.log('Connecting to wallet:', walletId);
+  const handleConnectWallet = (connector: any) => {
+    connect({ connector });
     onClose();
+  };
+
+  const getWalletIcon = (connectorId: string) => {
+    switch (connectorId) {
+      case 'metaMask':
+        return '🦊';
+      case 'coinbaseWallet':
+        return '🔵';
+      case 'walletConnect':
+        return '🔗';
+      default:
+        return '💼';
+    }
+  };
+
+  const getWalletName = (connector: any) => {
+    switch (connector.id) {
+      case 'metaMask':
+        return 'MetaMask';
+      case 'coinbaseWallet':
+        return 'Coinbase Wallet';
+      case 'walletConnect':
+        return 'WalletConnect';
+      default:
+        return connector.name;
+    }
   };
 
   return (
@@ -41,20 +64,21 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
             Choose a wallet to connect to EulerFlow
           </p>
           
-          {walletOptions.map((wallet) => (
+          {connectors.map((connector) => (
             <Button
-              key={wallet.id}
+              key={connector.id}
               variant="outline"
               className="w-full justify-start h-12"
-              onClick={() => handleConnectWallet(wallet.id)}
+              onClick={() => handleConnectWallet(connector)}
+              disabled={isPending}
             >
               <span className="text-2xl mr-3">
-                {wallet.icon}
+                {getWalletIcon(connector.id)}
               </span>
               <span className="font-medium">
-                {wallet.name}
+                {getWalletName(connector)}
               </span>
-              {wallet.id === 'metamask' && (
+              {connector.id === 'metaMask' && (
                 <span className="ml-auto text-xs text-muted-foreground">
                   Recommended
                 </span>

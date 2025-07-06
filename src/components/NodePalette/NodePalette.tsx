@@ -33,7 +33,7 @@ const nodeTemplates: NodeTemplate[] = [
     label: 'Trigger',
     category: 'control',
     description: 'Workflow starting point',
-    icon: <Play className="w-4 h-4" />
+    icon: <Play className="w-5 h-5" />
   },
   {
     id: 'supply-assets',
@@ -41,7 +41,7 @@ const nodeTemplates: NodeTemplate[] = [
     label: 'Supply Assets',
     category: 'core',
     description: 'Deposit assets to vault to earn yield',
-    icon: <Database className="w-4 h-4" />,
+    icon: <Database className="w-5 h-5" />,
     defaultData: { action: 'supply' }
   },
   {
@@ -50,7 +50,7 @@ const nodeTemplates: NodeTemplate[] = [
     label: 'Borrow Assets',
     category: 'core',
     description: 'Borrow assets against collateral',
-    icon: <Database className="w-4 h-4" />,
+    icon: <Database className="w-5 h-5" />,
     defaultData: { action: 'borrow' }
   },
   {
@@ -59,7 +59,7 @@ const nodeTemplates: NodeTemplate[] = [
     label: 'Withdraw Assets',
     category: 'core',
     description: 'Withdraw assets from vault',
-    icon: <ArrowUpRight className="w-4 h-4" />,
+    icon: <ArrowUpRight className="w-5 h-5" />,
     defaultData: { action: 'withdraw' }
   },
   {
@@ -68,7 +68,7 @@ const nodeTemplates: NodeTemplate[] = [
     label: 'Repay Debt',
     category: 'core',
     description: 'Repay borrowed assets',
-    icon: <CheckCircle className="w-4 h-4" />,
+    icon: <CheckCircle className="w-5 h-5" />,
     defaultData: { action: 'repay' }
   },
   {
@@ -77,7 +77,7 @@ const nodeTemplates: NodeTemplate[] = [
     label: 'Swap Tokens',
     category: 'core',
     description: 'Swap tokens via EulerSwap',
-    icon: <ArrowRightLeft className="w-4 h-4" />,
+    icon: <ArrowRightLeft className="w-5 h-5" />,
     defaultData: { action: 'swap' }
   },
   {
@@ -86,7 +86,7 @@ const nodeTemplates: NodeTemplate[] = [
     label: 'Set Permissions',
     category: 'core',
     description: 'Enable collaterals and controllers',
-    icon: <Settings className="w-4 h-4" />,
+    icon: <Settings className="w-5 h-5" />,
     defaultData: { action: 'permissions' }
   },
   {
@@ -95,7 +95,7 @@ const nodeTemplates: NodeTemplate[] = [
     label: 'Discord',
     category: 'alert',
     description: 'Send notification to Discord',
-    icon: <MessageSquare className="w-4 h-4" />,
+    icon: <MessageSquare className="w-5 h-5" />,
     defaultData: { alertType: 'discord' }
   },
   {
@@ -104,7 +104,7 @@ const nodeTemplates: NodeTemplate[] = [
     label: 'End',
     category: 'control',
     description: 'Workflow ending point',
-    icon: <Square className="w-4 h-4" />
+    icon: <Square className="w-5 h-5" />
   },
 ];
 
@@ -137,104 +137,88 @@ export const NodePalette: React.FC = () => {
 
   const filteredNodes = nodeTemplates.filter(node => {
     const matchesSearch = node.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         node.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || node.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+                        node.description.toLowerCase().includes(searchTerm.toLowerCase());
+   const matchesCategory = selectedCategory === 'all' || node.category === selectedCategory;
+   return matchesSearch && matchesCategory;
+ });
 
-  const categories = ['core', 'alert', 'control'] as const;
+ const categories = ['core', 'alert', 'control'] as const;
 
-  return (
-    <div 
-      className="w-80 border-r flex flex-col"
-      style={{ 
-        background: 'var(--sidebar-bg)',
-        borderColor: 'var(--sidebar-border)'
-      }}
-    >
-      <div className="p-4 border-b" style={{ borderColor: 'var(--sidebar-border)' }}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--sidebar-text)' }}>
-            Add to workflow
-          </h2>
-        </div>
+ return (
+   <div className="h-full flex flex-col">
+     <div className="p-6 border-b border-border">
+       <h2 className="text-lg font-semibold text-foreground mb-4">
+         Add to workflow
+       </h2>
 
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" 
-                  style={{ color: 'var(--sidebar-text)' }} />
-          <Input
-            placeholder="Search Action"
-            value={searchTerm}
-            onChange={(e: any) => setSearchTerm(e.target.value)}
-            className="pl-10 h-9"
-            style={{ 
-              background: 'var(--input)',
-              borderColor: 'var(--border)',
-              color: 'var(--sidebar-text)'
-            }}
-          />
-        </div>
+       <div className="relative mb-4">
+         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+         <Input
+           placeholder="Search Action"
+           value={searchTerm}
+           onChange={(e) => setSearchTerm(e.target.value)}
+           className="pl-10 h-10 bg-input border-border"
+         />
+       </div>
 
-        <div className="flex gap-1 mb-4 overflow-x-auto">
-          {categories.map((category) => (
-            <Button
-              key={category}
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedCategory(category)}
-              className={`panel-tabs tab-trigger whitespace-nowrap ${
-                selectedCategory === category ? 'data-[state=active]' : ''
-              }`}
-              data-state={selectedCategory === category ? 'active' : 'inactive'}
-            >
-              {categoryInfo[category].label}
-            </Button>
-          ))}
-        </div>
-      </div>
+       <div className="flex gap-2 mb-4">
+         {categories.map((category) => (
+           <Button
+             key={category}
+             variant={selectedCategory === category ? "default" : "ghost"}
+             size="sm"
+             onClick={() => setSelectedCategory(category)}
+             className={`tab-trigger whitespace-nowrap ${
+               selectedCategory === category 
+                 ? 'bg-primary text-primary-foreground' 
+                 : 'text-muted-foreground hover:text-foreground'
+             }`}
+           >
+             {categoryInfo[category].label}
+           </Button>
+         ))}
+       </div>
+     </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-3">
-          {selectedCategory && categoryInfo[selectedCategory as keyof typeof categoryInfo] && (
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-3">
-                {categoryInfo[selectedCategory as keyof typeof categoryInfo].icon}
-                <h3 className="font-medium" style={{ color: 'var(--sidebar-text)' }}>
-                  {categoryInfo[selectedCategory as keyof typeof categoryInfo].label}
-                </h3>
-              </div>
-            </div>
-          )}
+     <div className="flex-1 overflow-y-auto p-6">
+       <div className="space-y-2">
+         {selectedCategory && categoryInfo[selectedCategory as keyof typeof categoryInfo] && (
+           <div className="mb-6">
+             <div className="flex items-center gap-2 mb-4">
+               {categoryInfo[selectedCategory as keyof typeof categoryInfo].icon}
+               <h3 className="font-medium text-foreground">
+                 {categoryInfo[selectedCategory as keyof typeof categoryInfo].label}
+               </h3>
+             </div>
+           </div>
+         )}
 
-          {filteredNodes.map((node) => (
-            <div
-              key={node.id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, node)}
-              className="sidebar-item group"
-            >
-              <div 
-                className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ 
-                  background: `var(--category-${node.category === 'lp-toolkit' ? 'lp' : node.category})`,
-                  color: 'white'
-                }}
-              >
-                {node.icon}
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-sm" style={{ color: 'var(--sidebar-text)' }}>
-                  {node.label}
-                </div>
-                <p className="text-xs truncate" style={{ color: 'var(--sidebar-text-muted)' }}>
-                  {node.description}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+         {filteredNodes.map((node, index) => (
+           <div
+             key={node.id}
+             draggable
+             onDragStart={(e) => handleDragStart(e, node)}
+             className="sidebar-item group animate-fade-in"
+             style={{ animationDelay: `${index * 0.05}s` }}
+           >
+             <div 
+               className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 category-${node.category === 'lp-toolkit' ? 'lp' : node.category}`}
+             >
+               {node.icon}
+             </div>
+             
+             <div className="flex-1 min-w-0">
+               <div className="font-medium text-sm text-foreground">
+                 {node.label}
+               </div>
+               <p className="text-xs text-muted-foreground truncate">
+                 {node.description}
+               </p>
+             </div>
+           </div>
+         ))}
+       </div>
+     </div>
+   </div>
+ );
 };

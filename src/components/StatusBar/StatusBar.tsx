@@ -18,13 +18,13 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   const getStatusIcon = () => {
     switch (executionStatus) {
       case 'running':
-        return <Clock className="w-4 h-4 text-yellow-600" />;
+        return <Clock className="w-4 h-4 text-warning" />;
       case 'completed':
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
+        return <CheckCircle className="w-4 h-4 text-success" />;
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-600" />;
+        return <AlertCircle className="w-4 h-4 text-destructive" />;
       default:
-        return <Zap className="w-4 h-4 text-gray-600" />;
+        return <Zap className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
@@ -41,56 +41,54 @@ export const StatusBar: React.FC<StatusBarProps> = ({
     }
   };
 
-  const getStatusColor = () => {
+  const getStatusBadgeClass = () => {
     switch (executionStatus) {
       case 'running':
-        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+        return 'bg-warning/20 text-warning border-warning';
       case 'completed':
-        return 'bg-green-50 text-green-700 border-green-200';
+        return 'bg-success/20 text-success border-success';
       case 'error':
-        return 'bg-red-50 text-red-700 border-red-200';
+        return 'bg-destructive/20 text-destructive border-destructive';
       default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   return (
-    <div 
-      className="h-10 border-t flex items-center justify-between px-6 text-sm"
-      style={{ 
-        background: 'var(--panel-bg)',
-        borderColor: 'var(--panel-border)'
-      }}
-    >
-      <div className="flex items-center gap-4">
+    <div className="footer-bar h-12 flex items-center justify-between px-6 text-sm">
+      <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
-          <span style={{ color: 'var(--panel-text-muted)' }}>Nodes:</span>
-          <Badge variant="outline" className="text-xs h-5">
+          <span className="text-muted-foreground">Nodes:</span>
+          <Badge variant="outline" className="text-xs h-5 bg-card">
             {nodeCount}
           </Badge>
         </div>
         
         <div className="flex items-center gap-2">
-          <span style={{ color: 'var(--panel-text-muted)' }}>Connections:</span>
-          <Badge variant="outline" className="text-xs h-5">
+          <span className="text-muted-foreground">Connections:</span>
+          <Badge variant="outline" className="text-xs h-5 bg-card">
             {edgeCount}
           </Badge>
         </div>
         
         <div className="flex items-center gap-2">
-          <span style={{ color: 'var(--panel-text-muted)' }}>Status:</span>
+          <span className="text-muted-foreground">Status:</span>
           <Badge 
             variant="outline" 
-            className={`text-xs h-5 ${isValid ? 'border-green-300 text-green-700' : 'border-red-300 text-red-700'}`}
+            className={`text-xs h-5 ${
+              isValid 
+                ? 'bg-success/20 text-success border-success' 
+                : 'bg-destructive/20 text-destructive border-destructive'
+            }`}
           >
             {isValid ? 'Valid' : 'Invalid'}
           </Badge>
         </div>
       </div>
 
-      <div className={`flex items-center gap-2 px-3 py-1 rounded border ${getStatusColor()}`}>
+      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${getStatusBadgeClass()}`}>
         {getStatusIcon()}
-        <span>{getStatusText()}</span>
+        <span className="font-medium">{getStatusText()}</span>
       </div>
     </div>
   );

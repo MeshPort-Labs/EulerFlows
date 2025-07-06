@@ -26,155 +26,58 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-
-  --sidebar-background: var(--sidebar-bg);
-  --sidebar-text: var(--sidebar-text-color);
-  --sidebar-text-muted: var(--sidebar-text-muted-color);
-  --sidebar-hover: var(--sidebar-hover-bg);
-  --sidebar-active: var(--sidebar-active-bg);
-
-  --canvas-background: var(--canvas-bg);
-  --canvas-grid: var(--canvas-grid-color);
-  --canvas-dot: var(--canvas-dot-color);
-
-  --node-background: var(--node-bg);
-  --node-border: var(--node-border-color);
-  --node-shadow: var(--node-shadow-color);
-  --node-hover: var(--node-hover-bg);
-  --node-selected: var(--node-selected-color);
-  --node-handle: var(--node-handle-color);
-
-  --panel-background: var(--panel-bg);
-  --panel-border: var(--panel-border-color);
-  --panel-text: var(--panel-text-color);
-  --panel-text-muted: var(--panel-text-muted-color);
-
-  --tab-active: var(--tab-active-bg);
-  --tab-inactive: var(--tab-inactive-bg);
-  --tab-text: var(--tab-text-color);
-  --tab-text-active: var(--tab-text-active-color);
-
-  --category-core: var(--category-core-color);
-  --category-strategy: var(--category-strategy-color);
-  --category-lp: var(--category-lp-color);
-  --category-alert: var(--category-alert-color);
-  --category-control: var(--category-control-color);
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   
-  --background: oklch(0.09 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.12 0 0);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.12 0 0);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.57 0.19 255);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.16 0 0);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.16 0 0);
-  --muted-foreground: oklch(0.63 0 0);
-  --accent: oklch(0.57 0.19 255);
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.58 0.22 25);
-  --border: oklch(0.16 0 0);
-  --input: oklch(0.12 0 0);
-  --ring: oklch(0.57 0.19 255);
-  --chart-1: oklch(0.57 0.19 255);
-  --chart-2: oklch(0.55 0.15 165);
-  --chart-3: oklch(0.65 0.2 285);
-  --chart-4: oklch(0.67 0.18 70);
-  --chart-5: oklch(0.45 0.15 45);
-  --sidebar: oklch(0.10 0 0);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.57 0.19 255);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.16 0 0);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.16 0 0);
-  --sidebar-ring: oklch(0.57 0.19 255);
+  --background: hsl(220, 13%, 9%);
+  --foreground: hsl(210, 40%, 98%);
+  --card: hsl(220, 13%, 12%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --popover: hsl(220, 13%, 12%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --primary: hsl(217, 91%, 60%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(220, 13%, 16%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --muted: hsl(220, 13%, 16%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --accent: hsl(217, 91%, 60%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 84%, 60%);
+  --border: hsl(220, 13%, 18%);
+  --input: hsl(220, 13%, 14%);
+  --ring: hsl(217, 91%, 60%);
 
-  --sidebar-bg: oklch(0.10 0 0);
-  --sidebar-text-color: oklch(0.98 0 0);
-  --sidebar-text-muted-color: oklch(0.63 0 0);
-  --sidebar-hover-bg: oklch(0.14 0 0);
-  --sidebar-active-bg: oklch(0.57 0.19 255);
-
-  --canvas-bg: oklch(0.08 0 0);
-  --canvas-grid-color: oklch(0.14 0 0);
-  --canvas-dot-color: oklch(0.25 0 0);
-
-  --node-bg: oklch(0.13 0 0);
-  --node-border-color: oklch(0.20 0 0);
-  --node-shadow-color: oklch(0 0 0 / 0.6);
-  --node-hover-bg: oklch(0.16 0 0);
-  --node-selected-color: oklch(0.57 0.19 255);
-  --node-handle-color: oklch(0.57 0.19 255);
-
-  --panel-bg: oklch(0.10 0 0);
-  --panel-border-color: oklch(0.16 0 0);
-  --panel-text-color: oklch(0.98 0 0);
-  --panel-text-muted-color: oklch(0.63 0 0);
-
-  --tab-active-bg: oklch(0.57 0.19 255);
-  --tab-inactive-bg: oklch(0.16 0 0);
-  --tab-text-color: oklch(0.63 0 0);
-  --tab-text-active-color: oklch(0.98 0 0);
-
-  --category-core-color: oklch(0.57 0.19 255);
-  --category-strategy-color: oklch(0.65 0.2 285);
-  --category-lp-color: oklch(0.55 0.15 165);
-  --category-alert-color: oklch(0.67 0.18 70);
-  --category-control-color: oklch(0.45 0.05 0);
-}
-
-.dark {
-  --background: oklch(0.09 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.12 0 0);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.12 0 0);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.57 0.19 255);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.16 0 0);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.16 0 0);
-  --muted-foreground: oklch(0.63 0 0);
-  --accent: oklch(0.57 0.19 255);
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.58 0.22 25);
-  --border: oklch(0.16 0 0);
-  --input: oklch(0.12 0 0);
-  --ring: oklch(0.57 0.19 255);
-  --chart-1: oklch(0.57 0.19 255);
-  --chart-2: oklch(0.55 0.15 165);
-  --chart-3: oklch(0.65 0.2 285);
-  --chart-4: oklch(0.67 0.18 70);
-  --chart-5: oklch(0.45 0.15 45);
-  --sidebar: oklch(0.10 0 0);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.57 0.19 255);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.16 0 0);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.16 0 0);
-  --sidebar-ring: oklch(0.57 0.19 255);
+  --header-bg: hsl(220, 13%, 11%);
+  --sidebar-bg: hsl(220, 13%, 8%);
+  --canvas-bg: hsl(220, 13%, 6%);
+  --footer-bg: hsl(220, 13%, 10%);
+  --panel-bg: hsl(220, 13%, 10%);
+  
+  --sidebar-border: hsl(220, 13%, 20%);
+  --header-border: hsl(220, 13%, 18%);
+  --panel-border: hsl(220, 13%, 18%);
+  
+  --node-bg: hsl(220, 13%, 14%);
+  --node-border: hsl(220, 13%, 22%);
+  --node-hover: hsl(220, 13%, 18%);
+  --node-selected: hsl(217, 91%, 60%);
+  
+  --edge-default: hsl(215, 20%, 50%);
+  --edge-selected: hsl(217, 91%, 60%);
+  --edge-hover: hsl(215, 20%, 70%);
+  
+  --category-core: hsl(217, 91%, 60%);
+  --category-strategy: hsl(271, 70%, 65%);
+  --category-lp: hsl(142, 70%, 50%);
+  --category-alert: hsl(45, 93%, 47%);
+  --category-control: hsl(215, 20%, 65%);
+  
+  --success: hsl(142, 70%, 50%);
+  --warning: hsl(45, 93%, 47%);
+  --error: hsl(0, 84%, 60%);
 }
 
 @layer base {
@@ -183,62 +86,190 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    background: var(--background);
   }
 
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: oklch(0.12 0 0);
+    background: var(--muted);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.25 0 0);
-    border-radius: 4px;
+    background: var(--border);
+    border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.35 0 0);
+    background: var(--muted-foreground);
   }
 }
 
+.header-bar {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
+  backdrop-filter: blur(8px);
+}
+
+.sidebar-container {
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+}
+
+.canvas-container {
+  background: var(--canvas-bg);
+}
+
+.footer-bar {
+  background: var(--footer-bg);
+  border-top: 1px solid var(--header-border);
+}
+
+.panel-container {
+  background: var(--panel-bg);
+  border-left: 1px solid var(--panel-border);
+}
+
+.node-card {
+  background: var(--node-bg);
+  border: 1px solid var(--node-border);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.node-card:hover {
+  background: var(--node-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.node-card.selected {
+  border-color: var(--node-selected);
+  box-shadow: 0 0 0 2px var(--node-selected);
+}
+
 .sidebar-item {
-  @apply flex items-center gap-3 p-3 rounded-lg transition-all duration-200 cursor-pointer;
+  @apply flex items-center gap-3 p-3 rounded-lg transition-all duration-200 cursor-pointer relative overflow-hidden;
   background: transparent;
-  color: var(--sidebar-text);
   border: 1px solid transparent;
 }
 
+.sidebar-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  transition: left 0.5s;
+}
+
+.sidebar-item:hover::before {
+  left: 100%;
+}
+
 .sidebar-item:hover {
-  background: var(--sidebar-hover);
-  border-color: var(--sidebar-border);
+  background: var(--muted);
+  border-color: var(--border);
+  transform: translateX(2px);
 }
 
 .sidebar-item.active {
-  background: var(--sidebar-active);
-  color: oklch(0.98 0 0);
+  background: var(--primary);
+  color: var(--primary-foreground);
 }
 
-.panel-tabs .tab-trigger {
-  background: var(--tab-inactive);
-  color: var(--tab-text);
-  border-radius: var(--radius);
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
+.react-flow__background {
+  background-color: var(--canvas-bg);
+}
+
+.react-flow__edge {
+  pointer-events: all;
+}
+
+.react-flow__edge-path {
+  stroke: var(--edge-default);
+  stroke-width: 2;
+  transition: all 0.2s ease;
+  fill: none;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: var(--edge-hover);
+  stroke-width: 3;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--edge-selected);
+  stroke-width: 3;
+}
+
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 5;
+  animation: dashdraw 0.5s linear infinite;
+}
+
+.react-flow__edge-textwrapper {
+  pointer-events: all;
+}
+
+.react-flow__edge-textbg {
+  fill: var(--node-bg);
+  stroke: var(--node-border);
+  stroke-width: 1;
+}
+
+.react-flow__edge-text {
+  fill: var(--foreground);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+@keyframes dashdraw {
+  from {
+    stroke-dashoffset: 10;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  border: 2px solid var(--node-bg);
+  opacity: 0;
   transition: all 0.2s ease;
 }
 
-.panel-tabs .tab-trigger[data-state="active"] {
-  background: var(--tab-active);
-  color: var(--tab-text-active);
+.react-flow__node:hover .react-flow__handle,
+.react-flow__node.selected .react-flow__handle {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.tab-trigger {
+  @apply px-4 py-2 rounded-lg transition-all duration-200 font-medium text-sm;
+  background: transparent;
+  color: var(--muted-foreground);
+}
+
+.tab-trigger:hover {
+  color: var(--foreground);
+  background: var(--muted);
+}
+
+.tab-trigger[data-state="active"] {
+  background: var(--primary);
+  color: var(--primary-foreground);
 }
 
 .category-badge {
-  @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded;
-  border: 1px solid;
+  @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-md border;
 }
 
 .category-core {
@@ -271,77 +302,47 @@
   border-color: var(--category-control);
 }
 
-.react-flow__background {
-  background-color: var(--canvas-background);
+.animate-slide-in {
+  animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.react-flow__background .react-flow__background-pattern {
-  fill: var(--canvas-dot);
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
 }
 
-.react-flow__node {
-  background: var(--node-background);
-  border: 1px solid var(--node-border);
-  border-radius: var(--radius);
-  box-shadow: 0 4px 12px var(--node-shadow);
-  transition: all 0.2s ease;
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
-.react-flow__node:hover {
-  background: var(--node-hover);
-  transform: translateY(-1px);
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.react-flow__node.selected {
-  border-color: var(--node-selected);
-  box-shadow: 0 0 0 2px var(--node-selected);
+.pulse-ring {
+  animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
 }
 
-.react-flow__handle {
-  background: var(--node-handle);
-  border: 2px solid var(--node-bg);
-  width: 8px;
-  height: 8px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.react-flow__node:hover .react-flow__handle,
-.react-flow__node.selected .react-flow__handle {
-  opacity: 1;
-}
-
-.react-flow__edge-path {
-  stroke: oklch(0.25 0 0);
-  stroke-width: 2;
-}
-
-.react-flow__edge.selected .react-flow__edge-path {
-  stroke: var(--node-selected);
-}
-
-.property-field {
-  @apply space-y-2;
-}
-
-.property-field label {
-  @apply text-sm font-medium;
-  color: var(--panel-text);
-}
-
-.property-field input,
-.property-field textarea,
-.property-field select {
-  @apply w-full px-3 py-2 rounded border transition-colors;
-  background: var(--input);
-  border-color: var(--border);
-  color: var(--panel-text);
-}
-
-.property-field input:focus,
-.property-field textarea:focus,
-.property-field select:focus {
-  border-color: var(--ring);
-  outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 20%, transparent);
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  80%, 100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
 }

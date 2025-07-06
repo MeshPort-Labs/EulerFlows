@@ -3,12 +3,12 @@ import {
   ReactFlow,
   ReactFlowProvider,
   Background,
-  Controls,
   MiniMap,
   addEdge,
   useNodesState,
   useEdgesState,
   useOnSelectionChange,
+  ConnectionLineType,
   type Node,
   type Edge,
   type Connection,
@@ -21,9 +21,9 @@ const initialNodes: Node[] = [
   {
     id: '1',
     type: 'startNode',
-    position: { x: 100, y: 100 },
+    position: { x: -138, y: 225 },
     data: {
-      label: 'Trigger',
+      label: 'Portfolio Start',
       category: 'control',
       controlType: 'start'
     },
@@ -31,29 +31,208 @@ const initialNodes: Node[] = [
   {
     id: '2',
     type: 'coreActionNode',
-    position: { x: 300, y: 100 },
+    position: { x: 74, y: 109 },
     data: {
-      label: 'Discord',
-      category: 'alert',
-      action: 'discord',
-      description: 'Send message to Discord',
+      label: 'Supply 80 WETH',
+      category: 'core' as const,
+      action: 'supply' as const,
+      description: 'Primary collateral',
+      amount: '80',
+      vaultAddress: 'WETH'
     },
   },
   {
     id: '3',
-    type: 'endNode',
-    position: { x: 500, y: 100 },
+    type: 'coreActionNode',
+    position: { x: 73, y: 469 },
     data: {
-      label: 'End',
-      category: 'control',
-      controlType: 'end'
+      label: 'Supply 10000 USDC',
+      category: 'core' as const,
+      action: 'supply' as const,
+      description: 'Stablecoin base',
+      amount: '10000',
+      vaultAddress: 'USDC'
+    },
+  },
+  {
+    id: '4',
+    type: 'coreActionNode',
+    position: { x: 334, y: 328 },
+    data: {
+      label: 'Enable USDC Controller',
+      category: 'core' as const,
+      action: 'permissions' as const,
+      description: 'Setup borrowing capabilities',
+      controller: 'USDC'
+    },
+  },
+  {
+    id: '5',
+    type: 'coreActionNode',
+    position: { x: 469, y: 90 },
+    data: {
+      label: 'Withdraw 15 WETH',
+      category: 'core' as const,
+      action: 'withdraw' as const,
+      description: 'Rebalance WETH position',
+      amount: '15',
+      vaultAddress: 'WETH'
+    },
+  },
+  {
+    id: '6',
+    type: 'coreActionNode',
+    position: { x: 684, y: 93 },
+    data: {
+      label: 'Swap WETH → USDC',
+      category: 'core' as const,
+      action: 'swap' as const,
+      description: 'Convert to stablecoin',
+      tokenIn: 'WETH',
+      tokenOut: 'USDC',
+      amount: '15',
+      slippage: 0.5
+    },
+  },
+  {
+    id: '7',
+    type: 'coreActionNode',
+    position: { x: 915, y: 94 },
+    data: {
+      label: 'Supply Swapped USDC',
+      category: 'core' as const,
+      action: 'supply' as const,
+      description: 'Reinvest proceeds',
+      amount: '40000',
+      vaultAddress: 'USDC'
+    },
+  },
+  {
+    id: '8',
+    type: 'coreActionNode',
+    position: { x: 618, y: 294 },
+    data: {
+      label: 'Withdraw 8000 USDC',
+      category: 'core' as const,
+      action: 'withdraw' as const,
+      description: 'Take USDC profits',
+      amount: '8000',
+      vaultAddress: 'USDC'
+    },
+  },
+  {
+    id: '9',
+    type: 'coreActionNode',
+    position: { x: 633, y: 474 },
+    data: {
+      label: 'Swap USDC → WETH',
+      category: 'core' as const,
+      action: 'swap' as const,
+      description: 'Buy back WETH with profits',
+      tokenIn: 'USDC',
+      tokenOut: 'WETH',
+      amount: '8000',
+      slippage: 0.5
+    },
+  },
+  {
+    id: '10',
+    type: 'coreActionNode',
+    position: { x: 924, y: 474 },
+    data: {
+      label: 'Supply Bought WETH',
+      category: 'core' as const,
+      action: 'supply' as const,
+      description: 'Compound WETH position',
+      amount: '3',
+      vaultAddress: 'WETH'
+    },
+  },
+  {
+    id: '11',
+    type: 'endNode',
+    position: { x: 950, y: 200 },
+    data: {
+      label: 'Portfolio Optimized',
+      category: 'control' as const,
+      controlType: 'end' as const
     },
   },
 ];
 
 const initialEdges: Edge[] = [
-  { id: 'e1-2', source: '1', target: '2' },
-  { id: 'e2-3', source: '2', target: '3' },
+  { 
+    id: 'e1-2', 
+    source: '1', 
+    target: '2', 
+    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+  },
+  { 
+    id: 'e1-3', 
+    source: '1', 
+    target: '3', 
+    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+  },
+  { 
+    id: 'e2-4', 
+    source: '2', 
+    target: '4', 
+    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+  },
+  { 
+    id: 'e3-4', 
+    source: '3', 
+    target: '4', 
+    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+  },
+  { 
+    id: 'e4-5', 
+    source: '4', 
+    target: '5', 
+    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+  },
+  { 
+    id: 'e5-6', 
+    source: '5', 
+    target: '6', 
+    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+  },
+  { 
+    id: 'e6-7', 
+    source: '6', 
+    target: '7', 
+    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+  },
+  { 
+    id: 'e4-8', 
+    source: '4', 
+    target: '8', 
+    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+  },
+  { 
+    id: 'e8-9', 
+    source: '8', 
+    target: '9', 
+    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+  },
+  { 
+    id: 'e9-10', 
+    source: '9', 
+    target: '10', 
+    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+  },
+  { 
+    id: 'e7-11', 
+    source: '7', 
+    target: '11', 
+    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+  },
+  { 
+    id: 'e10-11', 
+    source: '10', 
+    target: '11', 
+    style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+  },
 ];
 
 interface WorkflowCanvasProps {
@@ -87,9 +266,28 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
     onChange: onSelectionChange,
   });
 
+  const onNodeClick = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      event.stopPropagation();
+      setSelectedNode(node);
+      onNodeSelection?.(node);
+    },
+    [onNodeSelection]
+  );
+
+  const onPaneClick = useCallback(() => {
+    setSelectedNode(null);
+    onNodeSelection?.(null);
+  }, [onNodeSelection]);
+
   const onConnect: OnConnect = useCallback(
     (params: Connection) => {
-      setEdges((eds) => addEdge(params, eds));
+      const newEdge = {
+        ...params,
+        type: 'straight',
+        style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+      };
+      setEdges((eds) => addEdge(newEdge, eds));
     },
     [setEdges]
   );
@@ -114,7 +312,7 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
       const position = {
         x: event.clientX - reactFlowBounds.left - 100,
-        y: event.clientY - reactFlowBounds.top - 50,
+        y: event.clientY - reactFlowBounds.top - 35,
       };
 
       const newNode: Node = {
@@ -136,9 +334,11 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
     setEdges((eds) => eds.filter((edge) => 
       edge.source !== nodeId && edge.target !== nodeId
     ));
-    setSelectedNode(null);
-    onNodeSelection?.(null);
-  }, [setNodes, setEdges, onNodeSelection]);
+    if (selectedNode?.id === nodeId) {
+      setSelectedNode(null);
+      onNodeSelection?.(null);
+    }
+  }, [setNodes, setEdges, selectedNode, onNodeSelection]);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (event.key === 'Delete' || event.key === 'Backspace') {
@@ -169,23 +369,23 @@ const WorkflowCanvasInner: React.FC<WorkflowCanvasProps> = ({
         onConnect={onConnect}
         onDrop={onDrop}
         onDragOver={onDragOver}
+        onNodeClick={onNodeClick}
+        onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
         className="bg-background"
         deleteKeyCode={null}
         selectNodesOnDrag={false} 
         multiSelectionKeyCode={null}
+        connectionLineType={ConnectionLineType.Straight}
+        defaultEdgeOptions={{
+          type: 'smoothstep',
+          style: { stroke: 'var(--edge-default)', strokeWidth: 2 }
+        }}
         style={{ background: 'var(--canvas-bg)' }}
       >
         <Background 
           className="opacity-25"
           style={{ backgroundColor: 'var(--canvas-bg)' }}
-        />
-        <Controls 
-          className="bg-card shadow-lg border" 
-          style={{ 
-            background: 'var(--panel-bg)',
-            borderColor: 'var(--panel-border)'
-          }}
         />
         <MiniMap 
           className="bg-card shadow-lg border" 

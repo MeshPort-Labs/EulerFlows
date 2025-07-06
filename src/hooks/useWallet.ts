@@ -1,25 +1,45 @@
 import { useState } from 'react';
+import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi';
 
 export const useWallet = () => {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  
+  const { address, isConnected, chainId } = useAccount();
+  const { connect, connectors, isPending } = useConnect();
+  const { disconnect } = useDisconnect();
+  const { switchChain } = useSwitchChain();
+
+  const isCorrectChain = chainId === 31337;
 
   const wallet = {
-    isConnected: false,
-    address: null,
-    chainId: null,
-    isCorrectChain: false,
+    isConnected,
+    address,
+    chainId,
+    isCorrectChain,
   };
 
   const connectWallet = () => {
-    setIsWalletModalOpen(true);
+    const metaMaskConnector = connectors.find(
+      (connector) => connector.id === 'metaMask'
+    );
+    
+    if (metaMaskConnector) {
+      connect({ connector: metaMaskConnector });
+    } else {
+      setIsWalletModalOpen(true);
+    }
   };
 
   const disconnectWallet = () => {
-    console.log('Disconnecting wallet');
+    disconnect();
   };
 
   const switchToDevland = () => {
-    console.log('Switching to devland');
+    try {
+      switchChain({ chainId: 31337 });
+    } catch (error) {
+      console.error('Failed to switch to Devland:', error);
+    }
   };
 
   return {
@@ -29,7 +49,7 @@ export const useWallet = () => {
     switchToDevland,
     isWalletModalOpen,
     setIsWalletModalOpen,
-    connectors: [],
-    isPending: false,
+    connectors,
+    isPending,
   };
 };
