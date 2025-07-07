@@ -5,6 +5,9 @@ import {
   repayToVault,
   withdrawFromVault,
   enableController,
+  prepareDirectPoolSwap,
+  getMyEulerSwapPool,
+  getQuoteOnChain,
   createLeverageStrategy,
   createLpCollateralizationStrategy,
   createHedgedLpStrategy,
@@ -131,20 +134,97 @@ export class EulerWorkflowExecutor {
           operations.push(enableController(data.controller as keyof typeof DEVLAND_ADDRESSES.vaults));
         }
         
-        // Note: enableCollateral is handled by your euler-lib but not exposed in the current interface
-        // If you have collaterals array, you'd need to add enableCollateral operations here
         if (data.collaterals && data.collaterals.length > 0) {
           console.log(`🔒 Enable collateral operations not yet implemented for: ${data.collaterals.join(', ')}`);
-          // TODO: Add enableCollateral operations when available
         }
         
         return operations;
       }
       
       case 'swap': {
-        console.warn(`⚠️ Swap operations not yet implemented in euler-lib`);
-        // TODO: Implement swap using prepareDirectPoolSwap when ready
-        return [];
+        if (!data.tokenIn || !data.tokenOut || !data.amount) {
+          console.error(`❌ Missing required fields for swap: tokenIn=${data.tokenIn}, tokenOut=${data.tokenOut}, amount=${data.amount}`);
+          return [];
+        }
+      
+        console.log(`🔄 Creating swap operation: ${data.amount} ${data.tokenIn} → ${data.tokenOut}`);
+        
+        try {
+          // Get user's EulerSwap pool
+          const poolAddress = await getMyEulerSwapPool(userAddress);
+          if (!poolAddress) {
+            console.error(`❌ No EulerSwap pool found for user ${userAddress}`);
+            return [];
+          }
+      
+          // Parse amount with correct decimals for input token
+          const inputDecimals = getTokenDecimals(data.tokenIn);
+          const amountIn = parseUnits(data.amount, inputDecimals);
+          
+          console.log(`🔄 Attempting swap: ${data.amount} ${data.tokenIn} (${amountIn} raw) → ${data.tokenOut}`);
+          
+          // Try to get on-chain quote with error handling
+          let quoteAmountOut: bigint | null = null;
+          try {
+            quoteAmountOut = await getQuoteOnChain(
+              poolAddress,
+              data.tokenIn as keyof typeof DEVLAND_ADDRESSES.vaults,
+              data.tokenOut as keyof typeof DEVLAND_ADDRESSES.vaults,
+              amountIn
+            );
+          } catch (quoteError: any) {
+            console.error(`❌ Quote failed for ${data.tokenIn} → ${data.tokenOut}:`, quoteError);
+            
+            // Check if it's a SwapLimitExceeded error
+            if (quoteError.message?.includes('SwapLimitExceeded')) {
+              console.error(`💥 Swap amount ${data.amount} ${data.tokenIn} exceeds pool capacity`);
+              console.error(`💡 Try reducing the swap amount or ensure the pool has sufficient liquidity`);
+              
+              // Return empty array to skip this operation but continue workflow
+              console.warn(`⚠️ Skipping swap operation due to liquidity constraints`);
+              return [];
+            }
+            
+            // For other errors, also skip but log differently
+            console.error(`❌ Failed to get swap quote: ${quoteError.message}`);
+            return [];
+          }
+          
+          if (!quoteAmountOut || quoteAmountOut === 0n) {
+            console.error(`❌ Invalid quote received: ${quoteAmountOut}`);
+            return [];
+          }
+      
+          // Apply slippage (default 0.5% if not specified)
+          const slippageBps = Math.floor((data.slippage || 0.5) * 100); // Convert to basis points
+          const minAmountOut = (quoteAmountOut * BigInt(10000 - slippageBps)) / 10000n;
+          
+          console.log(`💱 Swap details: ${data.amount} ${data.tokenIn} → ~${quoteAmountOut} ${data.tokenOut} (min: ${minAmountOut})`);
+      
+          // Create swap operation
+          const swapOperation = await prepareDirectPoolSwap(
+            poolAddress,
+            data.tokenIn as keyof typeof DEVLAND_ADDRESSES.vaults,
+            data.tokenOut as keyof typeof DEVLAND_ADDRESSES.vaults,
+            amountIn,
+            minAmountOut,
+            userAddress // Send swapped tokens to user's wallet
+          );
+      
+          console.log(`✅ Swap operation created successfully`);
+          return [swapOperation];
+          
+        } catch (error) {
+          console.error(`❌ Failed to create swap operation:`, error);
+          
+          // Log specific error types for debugging
+          if (error instanceof Error) {
+            console.error(`Error type: ${error.constructor.name}`);
+            console.error(`Error message: ${error.message}`);
+          }
+          
+          return [];
+        }
       }
       
       default:
@@ -167,7 +247,6 @@ export class EulerWorkflowExecutor {
           return [];
         }
         
-        // Use a reasonable default amount or get from UI
         const initialAmount = parseUnits('1000', getTokenDecimals(data.collateralAsset));
         
         console.log(`🚀 Creating leverage strategy: ${data.leverageFactor}x leverage on ${data.collateralAsset} vs ${data.borrowAsset}`);
@@ -252,7 +331,6 @@ export class EulerWorkflowExecutor {
         }
         
         const jitAmount = parseUnits(data.jitAmount, getTokenDecimals(data.jitAsset));
-        
         const poolAddress = userAddress;
         
         console.log(`⚡ Creating JIT liquidity strategy: ${data.jitAction} ${data.jitAmount} ${data.jitAsset}`);

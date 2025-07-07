@@ -12,6 +12,11 @@ import {
   MessageSquare,
   Bell,
   Search,
+  MessageCircle,
+  Zap,
+  BarChart3,
+  TrendingUp,
+  Coins,
 } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -27,22 +32,42 @@ interface NodeTemplate {
 }
 
 const nodeTemplates: NodeTemplate[] = [
+  // Control nodes
   {
     id: 'start',
     type: 'startNode',
-    label: 'Trigger',
+    label: 'Start',
     category: 'control',
     description: 'Workflow starting point',
-    icon: <Play className="w-5 h-5" />
+    icon: <Play className="w-4 h-4" />
   },
+  {
+    id: 'end',
+    type: 'endNode',
+    label: 'End',
+    category: 'control',
+    description: 'Workflow ending point',
+    icon: <Square className="w-4 h-4" />
+  },
+  
+  // Core Actions (each with specific action type)
   {
     id: 'supply-assets',
     type: 'coreActionNode',
     label: 'Supply Assets',
     category: 'core',
     description: 'Deposit assets to vault to earn yield',
-    icon: <Database className="w-5 h-5" />,
+    icon: <Database className="w-4 h-4" />,
     defaultData: { action: 'supply' }
+  },
+  {
+    id: 'withdraw-assets',
+    type: 'coreActionNode',
+    label: 'Withdraw Assets',
+    category: 'core',
+    description: 'Withdraw assets from vault to wallet',
+    icon: <ArrowUpRight className="w-4 h-4" />,
+    defaultData: { action: 'withdraw' }
   },
   {
     id: 'borrow-assets',
@@ -50,17 +75,8 @@ const nodeTemplates: NodeTemplate[] = [
     label: 'Borrow Assets',
     category: 'core',
     description: 'Borrow assets against collateral',
-    icon: <Database className="w-5 h-5" />,
+    icon: <Database className="w-4 h-4" />,
     defaultData: { action: 'borrow' }
-  },
-  {
-    id: 'withdraw-assets',
-    type: 'coreActionNode',
-    label: 'Withdraw Assets',
-    category: 'core',
-    description: 'Withdraw assets from vault',
-    icon: <ArrowUpRight className="w-5 h-5" />,
-    defaultData: { action: 'withdraw' }
   },
   {
     id: 'repay-debt',
@@ -68,7 +84,7 @@ const nodeTemplates: NodeTemplate[] = [
     label: 'Repay Debt',
     category: 'core',
     description: 'Repay borrowed assets',
-    icon: <CheckCircle className="w-5 h-5" />,
+    icon: <CheckCircle className="w-4 h-4" />,
     defaultData: { action: 'repay' }
   },
   {
@@ -77,7 +93,7 @@ const nodeTemplates: NodeTemplate[] = [
     label: 'Swap Tokens',
     category: 'core',
     description: 'Swap tokens via EulerSwap',
-    icon: <ArrowRightLeft className="w-5 h-5" />,
+    icon: <ArrowRightLeft className="w-4 h-4" />,
     defaultData: { action: 'swap' }
   },
   {
@@ -86,25 +102,95 @@ const nodeTemplates: NodeTemplate[] = [
     label: 'Set Permissions',
     category: 'core',
     description: 'Enable collaterals and controllers',
-    icon: <Settings className="w-5 h-5" />,
+    icon: <Settings className="w-4 h-4" />,
     defaultData: { action: 'permissions' }
+  },
+
+  // LP Toolkit
+  {
+    id: 'create-pool',
+    type: 'lpToolkitNode',
+    label: 'Create Pool',
+    category: 'lp-toolkit',
+    description: 'Deploy new EulerSwap pool',
+    icon: <Layers className="w-4 h-4" />,
+    defaultData: { action: 'create-pool' }
+  },
+  {
+    id: 'add-liquidity',
+    type: 'lpToolkitNode',
+    label: 'Add Liquidity',
+    category: 'lp-toolkit',
+    description: 'Add liquidity to pool',
+    icon: <Coins className="w-4 h-4" />,
+    defaultData: { action: 'add-liquidity' }
+  },
+  {
+    id: 'remove-liquidity',
+    type: 'lpToolkitNode',
+    label: 'Remove Liquidity',
+    category: 'lp-toolkit',
+    description: 'Remove liquidity from pool',
+    icon: <Coins className="w-4 h-4" />,
+    defaultData: { action: 'remove-liquidity' }
+  },
+
+  // Structured Strategies (The Magic Buttons)
+  {
+    id: 'leveraged-position',
+    type: 'strategyNode',
+    label: 'Build Leveraged Position',
+    category: 'strategy',
+    description: 'Create leveraged long position',
+    icon: <TrendingUp className="w-4 h-4" />,
+    defaultData: { strategyType: 'leverage' }
+  },
+  {
+    id: 'borrow-against-lp',
+    type: 'strategyNode',
+    label: 'Borrow Against LP',
+    category: 'strategy',
+    description: 'Use LP position as collateral',
+    icon: <Target className="w-4 h-4" />,
+    defaultData: { strategyType: 'borrow-against-lp' }
+  },
+  {
+    id: 'hedged-lp',
+    type: 'strategyNode',
+    label: 'Hedged LP',
+    category: 'strategy',
+    description: 'Create delta-neutral LP position',
+    icon: <BarChart3 className="w-4 h-4" />,
+    defaultData: { strategyType: 'hedged-lp' }
+  },
+  {
+    id: 'jit-liquidity',
+    type: 'strategyNode',
+    label: 'JIT Liquidity',
+    category: 'strategy',
+    description: 'Just-in-time liquidity provision',
+    icon: <Zap className="w-4 h-4" />,
+    defaultData: { strategyType: 'jit-liquidity' }
+  },
+
+  // Alert Nodes
+  {
+    id: 'telegram-alert',
+    type: 'alertNode',
+    label: 'Telegram Alert',
+    category: 'alert',
+    description: 'Send notification to Telegram',
+    icon: <MessageCircle className="w-4 h-4" />,  
+    defaultData: { alertType: 'telegram' }
   },
   {
     id: 'discord-alert',
     type: 'alertNode',
-    label: 'Discord',
+    label: 'Discord Alert',
     category: 'alert',
     description: 'Send notification to Discord',
-    icon: <MessageSquare className="w-5 h-5" />,
+    icon: <MessageSquare className="w-4 h-4" />,
     defaultData: { alertType: 'discord' }
-  },
-  {
-    id: 'end',
-    type: 'endNode',
-    label: 'End',
-    category: 'control',
-    description: 'Workflow ending point',
-    icon: <Square className="w-5 h-5" />
   },
 ];
 
@@ -142,7 +228,7 @@ export const NodePalette: React.FC = () => {
    return matchesSearch && matchesCategory;
  });
 
- const categories = ['core', 'alert', 'control'] as const;
+ const categories = ['core', 'strategy', 'lp-toolkit', 'alert', 'control'] as const;
 
  return (
    <div className="h-full flex flex-col">
@@ -151,7 +237,7 @@ export const NodePalette: React.FC = () => {
          Add to workflow
        </h2>
 
-       <div className="relative mb-4">
+       <div className="relative mb-4 overflow-x-auto">
          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
          <Input
            placeholder="Search Action"
@@ -161,7 +247,7 @@ export const NodePalette: React.FC = () => {
          />
        </div>
 
-       <div className="flex gap-2 mb-4">
+       <div className="flex gap-2 mb-4 overflow-x-auto">
          {categories.map((category) => (
            <Button
              key={category}

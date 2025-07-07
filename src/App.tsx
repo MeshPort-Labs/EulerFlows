@@ -87,10 +87,6 @@ function AppContent() {
     );
   }, []);
 
-  const handleNodeDrag = useCallback((nodeType: string, data: any) => {
-    console.log('Node dragged:', nodeType, data);
-  }, []);
-
   const handleClearCanvas = () => {
     setCurrentNodes([]);
     setCurrentEdges([]);
@@ -112,7 +108,7 @@ function AppContent() {
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Header */}
-      <header className="header-bar px-6 py-3 flex items-center justify-between border-b flex-shrink-0">
+      <header className={`header-bar px-6 py-3 flex items-center justify-between border-b flex-shrink-0 transition-opacity duration-200 ${isPanelOpen ? 'opacity-60' : ''}`}>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Activity className="w-6 h-6 text-primary" />
@@ -240,7 +236,10 @@ function AppContent() {
         </main>
 
         {isPanelOpen && (
-          <aside className="fixed right-0 top-0 bottom-0 w-96 z-40 animate-slide-in">
+          <div className="fixed top-0 left-0 w-full h-[64px] z-30 bg-black/40 pointer-events-none transition-opacity" />
+        )}
+        {isPanelOpen && (
+          <aside className="fixed right-0 top-0 bottom-0 w-96 z-40 animate-slide-in bg-gradient-to-l from-background/95 via-background/90 to-background/80 shadow-2xl border-l border-border">
             <PropertyPanel
               isOpen={isPanelOpen}
               onClose={() => setSelectedNode(null)}

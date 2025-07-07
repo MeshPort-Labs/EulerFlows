@@ -99,6 +99,23 @@ export const ExecutionDialog: React.FC<ExecutionDialogProps> = ({
     return (completedSteps / executionSteps.length) * 100;
   };
 
+  // Helper function to safely render step result - ONLY ADDITION
+  const renderStepResult = (result: any) => {
+    if (!result) return null;
+    
+    if (typeof result === 'string') {
+      return result;
+    }
+    
+    if (typeof result === 'object') {
+      if (result.message) return result.message;
+      if (result.transactionHash) return `tx: ${result.transactionHash.slice(0, 10)}...`;
+      return 'Completed';
+    }
+    
+    return String(result);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
@@ -128,7 +145,7 @@ export const ExecutionDialog: React.FC<ExecutionDialogProps> = ({
             <TabsTrigger value="execution">Execution</TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow">
             <TabsContent value="overview" className="h-full overflow-y-auto mt-0">
               <div className="space-y-6">
                 <Card>
@@ -384,7 +401,6 @@ export const ExecutionDialog: React.FC<ExecutionDialogProps> = ({
                     </CardHeader>
                     <CardContent className="space-y-4">
                     <div className="max-h-[40vh] overflow-y-auto">
-                      <div>
                         <div className="flex justify-between text-sm mb-2">
                           <span>Overall Progress</span>
                           <span>{Math.round(getOverallProgress())}%</span>
@@ -404,7 +420,7 @@ export const ExecutionDialog: React.FC<ExecutionDialogProps> = ({
                             <div className="flex-1">
                               <div className="font-medium text-sm">{step.description}</div>
                               {step.result && (
-                                <div className="text-xs text-muted-foreground">{step.result}</div>
+                                <div className="text-xs text-muted-foreground">{renderStepResult(step.result)}</div>
                               )}
                               {step.error && (
                                 <div className="text-xs text-destructive">{step.error}</div>
@@ -415,7 +431,6 @@ export const ExecutionDialog: React.FC<ExecutionDialogProps> = ({
                             )}
                           </div>
                         ))}
-                      </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -447,17 +462,18 @@ export const ExecutionDialog: React.FC<ExecutionDialogProps> = ({
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
+                      {/* <div className="space-y-3 "> */}
+                      <div className="max-h-[40vh] overflow-y-auto">
                         {executionSteps.map((step) => (
                           <div key={step.nodeId} className="flex items-center gap-3 p-3 rounded-lg border">
                             {getStepIcon(step)}
                             <div className="flex-1">
                               <div className="font-medium text-sm">{step.description}</div>
                               {step.result && (
-                                <div className="text-xs text-muted-foreground">{step.result}</div>
+                                <div className="text-xs text-muted-foreground">{renderStepResult(step.result)}</div>
                               )}
                             </div>
-                            {step.result?.includes('tx:') && (
+                            {step.result?.includes && step.result.includes('tx:') && (
                               <Button size="sm" variant="ghost">
                                 <ExternalLink className="w-3 h-3" />
                               </Button>
