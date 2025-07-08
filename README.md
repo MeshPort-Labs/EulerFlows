@@ -4,10 +4,7 @@
 
 ## Demo Video
 
-<video width="100%" controls>
-  <source src="./src/assets/euler-click-main.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+https://github.com/user-attachments/assets/cd602f4e-8b8d-4a36-a262-3037ea1731a7
 
 ## What is EulerFlow?
 
